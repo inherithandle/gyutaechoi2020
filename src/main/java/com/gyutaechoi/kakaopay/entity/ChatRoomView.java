@@ -1,11 +1,15 @@
 package com.gyutaechoi.kakaopay.entity;
 
+import org.hibernate.annotations.Immutable;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class ChatRoom {
+@Immutable
+@Table(name = "chatRoom")
+public class ChatRoomView {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,10 +20,10 @@ public class ChatRoom {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creatorUserNo")
-    private KakaoPayUser creator;
+    private KakaoPayUserView creator;
 
-    @OneToMany(mappedBy = "chatRoom")
-    private List<UserChatRoom> userChatRooms = new ArrayList<>();
+    @ManyToMany(mappedBy = "chatRooms")
+    private List<KakaoPayUserView> kakaoPayUsers = new ArrayList<>(); // 채팅룸 유저들.
 
     public Long getChatRoomNo() {
         return chatRoomNo;
@@ -37,19 +41,19 @@ public class ChatRoom {
         this.chatRoomName = chatRoomName;
     }
 
-    public KakaoPayUser getCreator() {
+    public KakaoPayUserView getCreator() {
         return creator;
     }
 
-    public void setCreator(KakaoPayUser creator) {
+    public void setCreator(KakaoPayUserView creator) {
         this.creator = creator;
     }
 
-    public List<UserChatRoom> getUserChatRooms() {
-        return userChatRooms;
+    public List<KakaoPayUserView> getKakaoPayUsers() {
+        return kakaoPayUsers;
     }
 
-    public void setUserChatRooms(List<UserChatRoom> userChatRooms) {
-        this.userChatRooms = userChatRooms;
+    public void setKakaoPayUsers(List<KakaoPayUserView> kakaoPayUsers) {
+        this.kakaoPayUsers = kakaoPayUsers;
     }
 }

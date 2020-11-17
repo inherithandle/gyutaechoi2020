@@ -14,23 +14,23 @@ INSERT INTO chat_room (chat_room_name, creator_user_no) values ('러브레이스
 INSERT INTO chat_room (chat_room_name, creator_user_no) values ('채팅방3', 8);
 
 -- 첫번째 채팅방에는 모든 유저가 있다. 에이다가 채팅방을 만들었다.
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (1, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (2, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (3, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (4, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (5, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (6, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (7, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (8, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (9, 1);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (10, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (1, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (2, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (3, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (4, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (5, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (6, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (7, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (8, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (9, 1);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (10, 1);
 
 -- 두번째 채팅방에는 에이다 러브레이스, 일론 머스크, 래리 페이지가 채팅중이다. 에이다가 채팅방을 만들었다.
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (1, 2);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (3, 2);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (10, 2);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (1, 2);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (3, 2);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (10, 2);
 
 -- 세번째 채팅방에는 귀도 반 로썸, 피터 틸, 에이다 러브레이스가 채팅중이다. 귀도가 채팅방을 만들었다.
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (8, 3);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (4, 3);
-INSERT INTO kakao_pay_user_chat_rooms (user_no, chat_room_no) values (1, 3);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (8, 3);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (4, 3);
+INSERT INTO user_chat_room (user_no, chat_room_no) values (1, 3);

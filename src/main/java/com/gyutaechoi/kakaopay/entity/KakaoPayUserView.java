@@ -1,5 +1,6 @@
 package com.gyutaechoi.kakaopay.entity;
 
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
@@ -7,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class KakaoPayUser {
+@Table(name = "kakaoPayUser")
+@Immutable
+public class KakaoPayUserView {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,8 +29,11 @@ public class KakaoPayUser {
     @Column(length = 80)
     private String password;
 
-    @OneToMany(mappedBy = "kakaoPayUser")
-    private List<UserChatRoom> userChatRooms = new ArrayList<>();
+    @ManyToMany(cascade = {})
+    @JoinTable(name = "userChatRoom",
+            joinColumns = @JoinColumn(name = "userNo"),
+            inverseJoinColumns = @JoinColumn(name = "chatRoomNo"))
+    private List<ChatRoomView> chatRooms = new ArrayList<>();
 
     public Long getUserNo() {
         return userNo;
@@ -69,12 +75,12 @@ public class KakaoPayUser {
         this.password = password;
     }
 
-    public List<UserChatRoom> getUserChatRooms() {
-        return userChatRooms;
+    public List<ChatRoomView> getChatRooms() {
+        return chatRooms;
     }
 
-    public void setUserChatRooms(List<UserChatRoom> userChatRooms) {
-        this.userChatRooms = userChatRooms;
+    public void setChatRooms(List<ChatRoomView> chatRooms) {
+        this.chatRooms = chatRooms;
     }
 
     @Override

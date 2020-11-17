@@ -37,6 +37,12 @@ public class EntityMappingTest {
         assertEquals("원더코딩우먼", lovelace.getNickname());
         assertEquals("user1", lovelace.getUserId());
         assertEquals(10, allUsers.size());
+
+        KakaoPayUser larryPage = allUsers.get(9);
+        assertEquals(10L, larryPage.getUserNo());
+        assertEquals("Larry Page", larryPage.getUsername());
+        assertEquals("검색왕", larryPage.getNickname());
+        assertEquals("user10", larryPage.getUserId());
     }
 
     @Autowired
