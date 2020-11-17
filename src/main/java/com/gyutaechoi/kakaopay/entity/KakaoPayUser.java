@@ -3,6 +3,8 @@ package com.gyutaechoi.kakaopay.entity;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class KakaoPayUser {
@@ -15,14 +17,20 @@ public class KakaoPayUser {
     @Column(nullable = false, length = 20, unique = true)
     private String userId;
 
-    @Column(length = 15)
+    @Column(length = 30)
     private String username;
 
-    @Column(length = 25)
+    @Column(length = 30)
     private String nickname;
 
     @Column(length = 80)
     private String password;
+
+    // @ManyToMany cascading 연산은 쿼리 낭비 문제가 있으므로 명시적으로 비활성화 하기로 한다.
+    @ManyToMany(cascade = {})
+    @JoinTable(joinColumns = @JoinColumn(name = "userNo"),
+                inverseJoinColumns = @JoinColumn(name = "chatRoomNo"))
+    private List<ChatRoom> chatRooms = new ArrayList<>();
 
     public Long getUserNo() {
         return userNo;
@@ -62,6 +70,14 @@ public class KakaoPayUser {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<ChatRoom> getChatRooms() {
+        return chatRooms;
+    }
+
+    public void setChatRooms(List<ChatRoom> chatRooms) {
+        this.chatRooms = chatRooms;
     }
 
     @Override

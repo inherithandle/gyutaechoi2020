@@ -1,6 +1,8 @@
 package com.gyutaechoi.kakaopay.entity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class ChatRoom {
@@ -16,6 +18,8 @@ public class ChatRoom {
     @JoinColumn(name = "creatorUserNo")
     private KakaoPayUser creator;
 
+    @ManyToMany(mappedBy = "chatRooms")
+    private List<KakaoPayUser> kakaoPayUsers = new ArrayList<>();
 
     public Long getChatRoomNo() {
         return chatRoomNo;
@@ -39,5 +43,13 @@ public class ChatRoom {
 
     public void setCreator(KakaoPayUser creator) {
         this.creator = creator;
+    }
+
+    public List<KakaoPayUser> getKakaoPayUsers() {
+        return kakaoPayUsers;
+    }
+
+    public void setKakaoPayUsers(List<KakaoPayUser> kakaoPayUsers) {
+        this.kakaoPayUsers = kakaoPayUsers;
     }
 }
