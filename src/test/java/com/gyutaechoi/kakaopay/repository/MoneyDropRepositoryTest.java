@@ -10,6 +10,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -38,11 +41,6 @@ class MoneyDropRepositoryTest {
         // 분배 로직 필요
     }
 
-    @Test
-    public void 일론머스크가_돈을줍는다() {
-
-    }
-
     private MoneyDrop userDropsMoneyonChatRoom(final long userNo, final long chatRoomNo, final int moneyToDrop) {
         final KakaoPayUser lovelace = kakaoPayUserRepository.getOne(1L);
         final ChatRoom firstChatRoom = chatRoomRepository.getOne(1L);
@@ -55,10 +53,36 @@ class MoneyDropRepositoryTest {
         moneyDrop.setFirstBalance(moneyToDrop);
         moneyDrop.setCurrentBalance(moneyDrop.getFirstBalance());
         moneyDrop.setHowManyUsers(3);
+        moneyDrop.setNumOfMoneyGetters(0);
         moneyDrop.setMoneyGetExpiredAfter(now.plus(10L, ChronoUnit.MINUTES));
         moneyDrop.setViewExpiredAfter(now.plus(7L, ChronoUnit.DAYS));
 
+        List<Integer> distribution = new ArrayList<>(3);
+        distribution.add(100);
+        distribution.add(300);
+        distribution.add(200);
+        moneyDrop.setDistribution(distribution);
+
         return moneyDropRepository.save(moneyDrop);
+    }
+
+    @Test
+    public void converterTest() {
+        userDropsMoneyonChatRoom(1L, 1L, 500);
+        MoneyDrop moneyDrop = moneyDropRepository.findById(1L).orElseThrow(() -> new RuntimeException());
+
+        assertEquals(100, moneyDrop.getDistribution().get(0));
+        assertEquals(300, moneyDrop.getDistribution().get(1));
+        assertEquals(200, moneyDrop.getDistribution().get(2));
+    }
+
+    @Test
+    public void findMoneyDropByToken() {
+        Optional<MoneyDrop> abC = moneyDropRepository.findMoneyDropByToken("AbC");
+        if (abC.isPresent()) {
+            throw new RuntimeException("돈을 뿌린적 없으니 데이터가 찾아지면 익셉션 던진다.");
+        }
+        // select 쿼리 확인
     }
 
 

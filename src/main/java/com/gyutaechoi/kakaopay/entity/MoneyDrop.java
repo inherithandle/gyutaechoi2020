@@ -19,7 +19,7 @@ public class MoneyDrop {
     private KakaoPayUser dropper; // 돈을 뿌린 사람.
 
     @OneToMany(mappedBy = "moneyDrop")
-    private List<MoneyGetter> moneyGetters = new ArrayList<>(); // 뿌린 금액을  받은 사람들
+    private List<MoneyGetter> moneyGetters = new ArrayList<>(); // 뿌린 금액을 받은 사람들
 
     @ManyToOne(fetch = FetchType.LAZY)
     private ChatRoom chatRoom;
@@ -29,13 +29,22 @@ public class MoneyDrop {
     private String token;
 
     @Column(nullable = false)
-    private Integer howManyPeople; // 뿌린 금액을 받을 수 있는 사람
+    private Integer howManyUsers; // 뿌린 금액을 받을 수 있는 사람 수
+
+    @Column(nullable = false)
+    private Integer numOfMoneyGetters; // 뿌린 돈을 주운 사람 수
+
+    @Convert(converter = IntegerListConverter.class)
+    @Column(nullable = false, length = 500)
+    private List<Integer> distribution; // 돈 분배
 
     @Column(nullable = false)
     private Integer firstBalance; // 최초로 설정한 뿌릴 금액
 
     @Column(nullable = false)
     private Integer currentBalance; // 남은 금액
+
+    private LocalDateTime createdDateTime;
 
     LocalDateTime viewExpiredAfter;
 
@@ -131,11 +140,43 @@ public class MoneyDrop {
         this.moneyGetters = moneyGetters;
     }
 
-    public Integer getHowManyPeople() {
-        return howManyPeople;
+    public Integer getHowManyUsers() {
+        return howManyUsers;
     }
 
-    public void setHowManyUsers(Integer howManyPeople) {
-        this.howManyPeople = howManyPeople;
+    public void setHowManyUsers(Integer howManyUsers) {
+        this.howManyUsers = howManyUsers;
+    }
+
+    public Integer getNumOfMoneyGetters() {
+        return numOfMoneyGetters;
+    }
+
+    public void setNumOfMoneyGetters(Integer numOfMoneyGetters) {
+        this.numOfMoneyGetters = numOfMoneyGetters;
+    }
+
+    public List<Integer> getDistribution() {
+        return distribution;
+    }
+
+    public void setDistribution(List<Integer> distribution) {
+        this.distribution = distribution;
+    }
+
+    public LocalDateTime getCreatedDateTime() {
+        return createdDateTime;
+    }
+
+    public void setCreatedDateTime(LocalDateTime createdDateTime) {
+        this.createdDateTime = createdDateTime;
+    }
+
+    public void incrementNumOfMoneyGetters() {
+        this.numOfMoneyGetters = numOfMoneyGetters + 1;
+    }
+
+    public void decrementCurrentBalanceBy(int moneyToGive) {
+        this.currentBalance -= moneyToGive;
     }
 }

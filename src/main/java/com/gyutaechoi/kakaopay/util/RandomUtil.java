@@ -15,4 +15,9 @@ public class RandomUtil {
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
     }
+
+    public static int generateRandomInteger(Random r, final int min, final int max) {
+        if (min == max) return 1;
+        return r.nextInt(max - min) + min;
+    }
 }
