@@ -1,5 +1,6 @@
 package com.gyutaechoi.kakaopay.service;
 
+import com.gyutaechoi.kakaopay.dto.MoneyGetterPostResponse;
 import com.gyutaechoi.kakaopay.entity.KakaoPayUser;
 import com.gyutaechoi.kakaopay.entity.KakaoPayUserView;
 import com.gyutaechoi.kakaopay.entity.MoneyDrop;
@@ -181,9 +182,9 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
                         getMoneyDrop(sevenDaysLater, tenMinutesLater, mockUserNo, 3, 1)));
 
         // 2번 유저, 빌게이츠가 돈을 줍는다.
-        Integer moneyToGet = moneyDropService.tryToGetMoneyFromMoneyDrop(billGatesUserNo, mockChatRoomName, mockToken);
+        MoneyGetterPostResponse response = moneyDropService.tryToGetMoneyFromMoneyDrop(billGatesUserNo, mockChatRoomName, mockToken);
 
-        assertThat(moneyToGet, greaterThan(0));
+        assertThat(response.getReceivedMoney(), greaterThan(0));
     }
 
     private KakaoPayUserView getKakaoPayUserView(long userNo) {

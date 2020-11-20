@@ -13,6 +13,6 @@ public interface MoneyGetterRepository extends JpaRepository<MoneyGetter, Long> 
     @Query("select m from MoneyGetter m where m.moneyDrop.moneyDropNo = :moneyDropNo and m.moneyGetterUser.userNo = :userNo")
     Optional<MoneyGetter> findMoneyGetterByMoneyDropNoAndUserNo(long moneyDropNo, long userNo);
 
-    @Query("select m from MoneyGetter m where m.moneyGetterUser.userNo = :userNo")
-    Optional<MoneyGetter> findByUserNo(long userNo);
+    @Query("select m from MoneyGetter m inner join m.moneyDrop md where m.moneyGetterUser.userNo = :userNo and md.token = :token")
+    Optional<MoneyGetter> findByUserNo(long userNo, String token);
 }

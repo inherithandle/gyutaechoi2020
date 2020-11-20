@@ -9,7 +9,7 @@ public class MoneyGetter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long MoneyGetterNo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "moneyDropNo")
     private MoneyDrop moneyDrop;
 

@@ -1,11 +1,14 @@
 package com.gyutaechoi.kakaopay.service;
 
 import com.gyutaechoi.kakaopay.dto.MoneyDropResponse;
+import com.gyutaechoi.kakaopay.dto.MoneyGetterPostResponse;
 import com.gyutaechoi.kakaopay.entity.MoneyGetter;
 import com.gyutaechoi.kakaopay.repository.MoneyGetterRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +28,7 @@ class MoneyDropServiceTest {
     @Test
     public void 러브레이스가_500원을_3명에게_뿌린다() {
         final long lovelace = 1L;
-        String token = moneyDropService.addMoneyDrop(lovelace, "러브레이스 외 9명", 500, 3);
+        String token = moneyDropService.addMoneyDrop(lovelace, "chatroom_id1", 500, 3);
 
         assertEquals(3, token.length());
         System.out.println("돈뿌리기 토큰 : " + token);
@@ -39,24 +42,27 @@ class MoneyDropServiceTest {
     public void 빌게이츠는_러브레이스가_뿌린돈을_줍는다() {
         final long lovelace = 1L;
         final long gates = 2L;
-        String token = moneyDropService.addMoneyDrop(lovelace, "러브레이스 외 9명", 500, 3);
+        String token = moneyDropService.addMoneyDrop(lovelace, "chatroom_id1", 500, 3);
 
-        final Integer moneyToReceive = moneyDropService.tryToGetMoneyFromMoneyDrop(gates, "러브레이스 외 9명", token);
+        MoneyGetterPostResponse response = moneyDropService.tryToGetMoneyFromMoneyDrop(gates, "chatroom_id1", token);
 
-        System.out.println("받은 돈 : " + moneyToReceive);
+        System.out.println("받은 돈 : " + response.getReceivedMoney());
 
-        final MoneyGetter moneyGetter = moneyGetterRepository.findByUserNo(gates).orElseThrow(() -> new RuntimeException());
-        assertEquals(moneyToReceive, moneyGetter.getAmount());
+        final List<MoneyGetter> all = moneyGetterRepository.findAll();
+
+        final MoneyGetter moneyGetter = moneyGetterRepository.findByUserNo(gates, token)
+                .orElseThrow(() -> new RuntimeException());
+        assertEquals(response.getReceivedMoney(), moneyGetter.getAmount());
     }
 
     @Test
     public void 러브레이스가_뿌린돈을_러브레이스가_주울_수_없다() {
         final long lovelace = 1L;
 
-        String token = moneyDropService.addMoneyDrop(lovelace, "러브레이스 외 9명", 500, 3);
+        String token = moneyDropService.addMoneyDrop(lovelace, "chatroom_id1", 500, 3);
 
         assertThrows(RuntimeException.class, () -> {
-            moneyDropService.tryToGetMoneyFromMoneyDrop(lovelace, "러브레이스 외 9명", token);
+            moneyDropService.tryToGetMoneyFromMoneyDrop(lovelace, "chatroom_id1", token);
         });
     }
 
@@ -65,10 +71,9 @@ class MoneyDropServiceTest {
         final long lovelace = 1L;
         final long gates = 2L;
         final long musk = 3L;
-        final String chatRoomName = "러브레이스 외 9명";
+        final String chatRoomName = "chatroom_id1";
 
         String token = moneyDropService.addMoneyDrop(lovelace, chatRoomName, 500, 3);
-
         moneyDropService.tryToGetMoneyFromMoneyDrop(gates, chatRoomName, token);
         moneyDropService.tryToGetMoneyFromMoneyDrop(musk, chatRoomName, token);
 

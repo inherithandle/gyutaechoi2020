@@ -16,10 +16,10 @@ class KakaoPayUserRepositoryTest {
 
     @Test
     void findUserAndChatRoomByUserNoAndChatRoomName() {
-        // 채팅방3에서 귀도 반 로썸, 피터 틸, 에이다 러브레이스 대화중이라고 가정 (data.sql)
-        // 피터틸이 속한 채팅방3을 찾는다.
+        // chatroom_id3에서 귀도 반 로썸, 피터 틸, 에이다 러브레이스 대화중이라고 가정 (data.sql)
+        // 피터틸이 속한 chatroom_id3을 찾는다.
         final long X_USER_ID = 8L; // 귀도 반 로썸의 user_no
-        final String X_ROOM_ID = "채팅방3";
+        final String X_ROOM_ID = "chatroom_id3";
 
         ChatRoom chatRoom = chatRoomRepository.getUserAndChatRoomUserNoAndChatRoomName(X_USER_ID, X_ROOM_ID)
                 .orElseThrow(() -> new RuntimeException());
@@ -29,9 +29,9 @@ class KakaoPayUserRepositoryTest {
 
     @Test
     public void chatRoomNotFound() {
-        // 빌게이츠는 채팅방3에 없기 때문에 조회 불가.
+        // 빌게이츠는 chatroom_id3에 없기 때문에 조회 불가.
         final long X_USER_ID = 2L; // 빌게이츠
-        final String X_ROOM_ID = "채팅방3";
+        final String X_ROOM_ID = "chatroom_id3";
 
         assertThrows(RuntimeException.class, () -> {
             chatRoomRepository.getUserAndChatRoomUserNoAndChatRoomName(X_USER_ID, X_ROOM_ID)

@@ -1,6 +1,7 @@
 package com.gyutaechoi.kakaopay.service;
 
 import com.gyutaechoi.kakaopay.dto.MoneyDropResponse;
+import com.gyutaechoi.kakaopay.dto.MoneyGetterPostResponse;
 import com.gyutaechoi.kakaopay.dto.MoneyGetterResponse;
 import com.gyutaechoi.kakaopay.entity.KakaoPayUserView;
 import com.gyutaechoi.kakaopay.entity.MoneyDrop;
@@ -76,10 +77,9 @@ public class MoneyDropService {
      * @return Integer, 유저가 받은 금액을 리턴합니다.
      */
     @Transactional
-    public Integer tryToGetMoneyFromMoneyDrop(long userNo, String chatRoomName, String token) {
+    public MoneyGetterPostResponse tryToGetMoneyFromMoneyDrop(long userNo, String chatRoomName, String token) {
         kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(userNo, chatRoomName)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
-
         MoneyDrop moneyDrop = moneyDropRepository.findMoneyDropByToken(token)
                                     .orElseThrow(() -> new RuntimeException("Token에 대한 정보가 없습니다."));
 
@@ -117,7 +117,8 @@ public class MoneyDropService {
         moneyDrop.incrementNumOfMoneyGetters();
 
         // etc: 뿌린 금액을 받는데 성공했으므로, 돈을 주운 사람의 잔액 증가 시킴 (구현 요구 사항은 아님)
-        return moneyToGive;
+
+        return new MoneyGetterPostResponse(moneyToGive);
     }
 
     /**

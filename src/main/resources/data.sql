@@ -9,9 +9,9 @@ INSERT INTO kakao_pay_user (nickname, password, user_id, username) values ('파�
 INSERT INTO kakao_pay_user (nickname, password, user_id, username) values ('구글맨', '12345', 'user9', 'Jeffrey Dean');
 INSERT INTO kakao_pay_user (nickname, password, user_id, username) values ('검색왕', '12345', 'user10', 'Larry Page');
 
-INSERT INTO chat_room (chat_room_name, creator_user_no) values ('러브레이스 외 9명', 1);
-INSERT INTO chat_room (chat_room_name, creator_user_no) values ('러브레이스 외 2명', 1);
-INSERT INTO chat_room (chat_room_name, creator_user_no) values ('채팅방3', 8);
+INSERT INTO chat_room (chat_room_name, creator_user_no) values ('chatroom_id1', 1);
+INSERT INTO chat_room (chat_room_name, creator_user_no) values ('chatroom_id2', 1);
+INSERT INTO chat_room (chat_room_name, creator_user_no) values ('chatroom_id3', 8);
 
 -- 첫번째 채팅방에는 모든 유저가 있다. 에이다가 채팅방을 만들었다.
 INSERT INTO user_chat_room (user_no, chat_room_no) values (1, 1);
