@@ -6,6 +6,9 @@ import com.gyutaechoi.kakaopay.dto.MoneyGetterResponse;
 import com.gyutaechoi.kakaopay.entity.KakaoPayUserView;
 import com.gyutaechoi.kakaopay.entity.MoneyDrop;
 import com.gyutaechoi.kakaopay.entity.MoneyGetter;
+import com.gyutaechoi.kakaopay.exception.BadRequestException;
+import com.gyutaechoi.kakaopay.exception.ForbiddenException;
+import com.gyutaechoi.kakaopay.exception.NotFoundException;
 import com.gyutaechoi.kakaopay.repository.*;
 import com.gyutaechoi.kakaopay.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +47,7 @@ public class MoneyDropService {
     @Transactional
     public String addMoneyDrop(long userNo, String chatRoomName, int moneyToDrop, int howManyUsers) {
         final KakaoPayUserView user = kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(userNo, chatRoomName)
-                                    .orElseThrow(() -> new RuntimeException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
+                                    .orElseThrow(() -> new BadRequestException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
 
         final Long chatRoomNo = user.getChatRooms().get(0).getChatRoomNo();
         final String token = RandomUtil.generateRandomString(3);
@@ -79,26 +82,26 @@ public class MoneyDropService {
     @Transactional
     public MoneyGetterPostResponse tryToGetMoneyFromMoneyDrop(long userNo, String chatRoomName, String token) {
         kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(userNo, chatRoomName)
-                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
+                .orElseThrow(() -> new BadRequestException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
         MoneyDrop moneyDrop = moneyDropRepository.findMoneyDropByToken(token)
-                                    .orElseThrow(() -> new RuntimeException("Token에 대한 정보가 없습니다."));
+                                    .orElseThrow(() -> new NotFoundException("Token 정보를 DB에서 찾을 수 없습니다."));
 
         if (userNo == moneyDrop.getDropper().getUserNo()) {
-            throw new RuntimeException("돈을 뿌린 사람은 받을 수 없습니다!");
+            throw new BadRequestException("돈을 뿌린 사람은 받을 수 없습니다!");
         }
 
         final LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(moneyDrop.getMoneyGetExpiredAfter())) {
-            throw new RuntimeException("유효기간이 지났습니다.");
+            throw new BadRequestException("유효기간이 지났습니다.");
         }
 
         if (moneyDrop.getNumOfMoneyGetters() == moneyDrop.getHowManyUsers()) {
-            throw new RuntimeException("이미 모든 인원에게 돈을 주었습니다. 다음 기회에!");
+            throw new ForbiddenException("이미 모든 인원에게 돈을 주었습니다. 다음 기회에!");
         }
 
         Optional<MoneyGetter> optional = moneyGetterRepository.findMoneyGetterByMoneyDropNoAndUserNo(moneyDrop.getMoneyDropNo(), userNo);
         if (optional.isPresent()) {
-            throw new RuntimeException("이미 돈을 지급 받았습니다.");
+            throw new ForbiddenException("이미 돈을 지급 받았습니다.");
         }
 
         final int index = moneyDrop.getNumOfMoneyGetters();
@@ -129,15 +132,16 @@ public class MoneyDropService {
     @Transactional(readOnly = true)
     public MoneyDropResponse getMoneyDrop(final long userNo, final String token) {
         final MoneyDrop moneyDrop = moneyDropRepository.findMoneyDropAndMoneyGetterByToken(token)
-                .orElseThrow(() -> new RuntimeException("토큰 정보가 없습니다."));
+                .orElseThrow(() -> new NotFoundException("Token 정보를 DB에서 찾을 수 없습니다."));
 
+        // 타인의 돈 뿌리기 정보를 조회할 수 없다.
         if (userNo != moneyDrop.getDropper().getUserNo()) {
-            throw new RuntimeException("403 권한이 없습니다.");
+            throw new ForbiddenException();
         }
 
         final LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(moneyDrop.getViewExpiredAfter())) {
-            throw new RuntimeException("유효기간이 지났습니다.");
+            throw new BadRequestException("유효기간이 지났습니다.");
         }
 
         return generateMoneyDropResponse(moneyDrop);

@@ -3,6 +3,9 @@ package com.gyutaechoi.kakaopay.service;
 import com.gyutaechoi.kakaopay.dto.MoneyDropResponse;
 import com.gyutaechoi.kakaopay.entity.KakaoPayUser;
 import com.gyutaechoi.kakaopay.entity.MoneyDrop;
+import com.gyutaechoi.kakaopay.exception.BadRequestException;
+import com.gyutaechoi.kakaopay.exception.ForbiddenException;
+import com.gyutaechoi.kakaopay.exception.NotFoundException;
 import com.gyutaechoi.kakaopay.repository.MoneyDropRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +41,7 @@ public class MoneyDropServiceGetMoneyDropUnitTest {
         given(moneyDropRepository.findMoneyDropAndMoneyGetterByToken(mockToken))
                 .willReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             moneyDropService.getMoneyDrop(mockUserNo, mockToken);
         });
     }
@@ -54,7 +57,7 @@ public class MoneyDropServiceGetMoneyDropUnitTest {
                 .willReturn(Optional.of(getMoneyDrop(1L, threeDaysLater, 500)));
 
         // 돈을 유저번호1이 뿌렸는데 유저번호2가 조회시도한다. 익셉션 던진다.
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(ForbiddenException.class, () -> {
             moneyDropService.getMoneyDrop(mockUserNo2, mockToken);
         });
 
@@ -69,7 +72,7 @@ public class MoneyDropServiceGetMoneyDropUnitTest {
         given(moneyDropRepository.findMoneyDropAndMoneyGetterByToken(mockToken))
                 .willReturn(Optional.of(getMoneyDrop(1L, oneSecondEarlier, 500)));
 
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(BadRequestException.class, () -> {
             moneyDropService.getMoneyDrop(mockUserNo, mockToken);
         });
 
@@ -80,15 +83,16 @@ public class MoneyDropServiceGetMoneyDropUnitTest {
         final LocalDateTime now = LocalDateTime.now();
         final LocalDateTime threeDaysLater = now.plusDays(3L); // 지금시간으로부터 3일뒤
 
-        // DB에서 토큰으로 돈뿌리기 정보를 조회할수 있다고 가정한다.
+        // 유저가 500원 뿌린 정보가 DB에서 발견 가능한다고 가정한다.
+        // 어떤 유저도 줍지 않았다고 가정한다.
         given(moneyDropRepository.findMoneyDropAndMoneyGetterByToken(mockToken))
                 .willReturn(Optional.of(getMoneyDrop(1L, threeDaysLater, 500)));
 
         MoneyDropResponse response = moneyDropService.getMoneyDrop(mockUserNo, mockToken);
 
+        // 예외가 발생하지 않고 500원을 정상적으로 리턴받았다.
         assertEquals(500, response.getMoneyToDrop());
         assertEquals(0, response.getDroppedMoney());
-
     }
 
     private MoneyDrop getMoneyDrop(long dropperUserNo, LocalDateTime viewExpiredAfter, int firstBalance) {

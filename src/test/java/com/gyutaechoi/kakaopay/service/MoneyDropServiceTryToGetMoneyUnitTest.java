@@ -5,6 +5,9 @@ import com.gyutaechoi.kakaopay.entity.KakaoPayUser;
 import com.gyutaechoi.kakaopay.entity.KakaoPayUserView;
 import com.gyutaechoi.kakaopay.entity.MoneyDrop;
 import com.gyutaechoi.kakaopay.entity.MoneyGetter;
+import com.gyutaechoi.kakaopay.exception.BadRequestException;
+import com.gyutaechoi.kakaopay.exception.ForbiddenException;
+import com.gyutaechoi.kakaopay.exception.NotFoundException;
 import com.gyutaechoi.kakaopay.repository.KakaoPayUserRepository;
 import com.gyutaechoi.kakaopay.repository.KakaoPayUserViewRepository;
 import com.gyutaechoi.kakaopay.repository.MoneyDropRepository;
@@ -50,13 +53,13 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
     private static final String mockToken = "aB_";
 
     @Test
-    public void 유저가_참여하고있지않은_채팅방에_돈줍기_시도하면_익셉션_던진다() {
+    public void 유저가_참여하고있지않은_채팅방에_돈받기_시도하면_익셉션_던진다() {
         // 유저번호 1은 "목채팅방"에 참여하지 않고 있다고 가정. DB 조회 결과 없음이라고 가정한다.
         given(kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(mockUserNo, mockChatRoomName))
                 .willReturn(Optional.empty());
 
         // 존재하지 않으면 예외를 던진다.
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(BadRequestException.class, () -> {
             moneyDropService.tryToGetMoneyFromMoneyDrop(mockUserNo, mockChatRoomName, mockToken);
         });
     }
@@ -71,7 +74,7 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
         given(moneyDropRepository.findMoneyDropByToken(mockToken)).willReturn(Optional.empty());
 
         // "돈뿌리기"에 대한 정보 조회 불가능하면 예외를 던진다.
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             moneyDropService.tryToGetMoneyFromMoneyDrop(mockUserNo, mockChatRoomName, mockToken);
         });
     }
@@ -89,7 +92,7 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
                 Optional.of(getMoneyDrop(now, now, 1L, 3, 0)));
 
         // mock user는 자신이 뿌린 돈을 주우려고 시도하지만. 그럴 경우 익셉션을 던진다.
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(BadRequestException.class, () -> {
             moneyDropService.tryToGetMoneyFromMoneyDrop(mockUserNo, mockChatRoomName, mockToken);
         });
     }
@@ -112,7 +115,7 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
                 .willReturn(Optional.of(getMoneyDrop(sevenDaysLater, tenMinutesEarlier, mockUserNo, 3, 0)));
 
         // 유효기간이 지났으므로 예외를 던진다.
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(BadRequestException.class, () -> {
             moneyDropService.tryToGetMoneyFromMoneyDrop(billGatesUserNo, mockChatRoomName, mockToken);
         });
     }
@@ -138,7 +141,7 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
                 .willReturn(Optional.of(getMoneyGetter(1L, billGatesUserNo)));
 
         // 돈을 이미 주웠으면 예외를 던진다.
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(ForbiddenException.class, () -> {
             moneyDropService.tryToGetMoneyFromMoneyDrop(billGatesUserNo, mockChatRoomName, mockToken);
         });
     }
@@ -159,7 +162,7 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
                 .willReturn(Optional.of(
                         getMoneyDrop(sevenDaysLater, tenMinutesLater, mockUserNo, 3, 3)));
 
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(ForbiddenException.class, () -> {
             moneyDropService.tryToGetMoneyFromMoneyDrop(billGatesUserNo, mockChatRoomName, mockToken);
         });
     }

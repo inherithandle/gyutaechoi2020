@@ -3,6 +3,7 @@ package com.gyutaechoi.kakaopay.service;
 import com.gyutaechoi.kakaopay.dto.MoneyDropResponse;
 import com.gyutaechoi.kakaopay.dto.MoneyGetterPostResponse;
 import com.gyutaechoi.kakaopay.entity.MoneyGetter;
+import com.gyutaechoi.kakaopay.exception.BadRequestException;
 import com.gyutaechoi.kakaopay.repository.MoneyGetterRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ class MoneyDropServiceTest {
 
         String token = moneyDropService.addMoneyDrop(lovelace, "chatroom_id1", 500, 3);
 
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(BadRequestException.class, () -> {
             moneyDropService.tryToGetMoneyFromMoneyDrop(lovelace, "chatroom_id1", token);
         });
     }

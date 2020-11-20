@@ -2,6 +2,7 @@ package com.gyutaechoi.kakaopay.service;
 
 import com.gyutaechoi.kakaopay.entity.ChatRoomView;
 import com.gyutaechoi.kakaopay.entity.KakaoPayUserView;
+import com.gyutaechoi.kakaopay.exception.BadRequestException;
 import com.gyutaechoi.kakaopay.repository.ChatRoomRepository;
 import com.gyutaechoi.kakaopay.repository.KakaoPayUserRepository;
 import com.gyutaechoi.kakaopay.repository.KakaoPayUserViewRepository;
@@ -47,7 +48,7 @@ class MoneyDropServiceAddMoneyDropUnitTest {
         given(kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(mockUserNo, chatRoomName))
                 .willReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(BadRequestException.class, () -> {
             moneyDropService.addMoneyDrop(mockUserNo, chatRoomName, 500, 3);
         });
     }
