@@ -15,6 +15,13 @@
 git clone 
 ./gradlew bootRun
 ```
+* API 문서: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+* DB 테이블을 직접 확인하고 싶으시면 [http://localhost:8080/h2-console](http://localhost:8080/h2-console) 을 확인하시면 됩니다.
+    * 웹 콘솔 로그인 할때 아래와같이 입력해주세요.
+    * Driver Class: org.h2.Driver
+    * JDBC URL: jdbc:h2:mem:testdb
+    * id: sa
+    * password: password
 
 ### 문제해결 전략, 데이터베이스 설계
 * H2 database, JPA를 사용했습니다.
@@ -25,9 +32,9 @@ git clone
 * chat_room 테이블 (ChatRoom.java)
     * 채팅방 정보를 담고 있습니다.
     * X-ROOM-ID 헤더 값으로 chat_room_name 칼럼을 사용합니다.
-    * chat_room_name은 테이블 전체에서 유니크해야 합니다.
-    * HTTP 헤더 값으로 사용하고 있고 표준을 지키기 위해 ASCII(알파벳, 숫자, 기호)만 사용가능합니다.
-    * 그래도 한글을 쓰고 싶다면 URL encoding 하셔서 API를 호출해야 합니다. 
+        * chat_room_name은 테이블 전체에서 유니크해야 합니다.
+        * 한글을 사용할수 없습니다. HTTP 헤더 값은 ASCII 값만 사용하는 것이 표준입니다.
+        * 그래도 한글을 쓰고 싶다면 URL encoding 하셔서 API를 호출해야 합니다. 
 * user_chat_room 테이블 (UserChatRoom.java)
     * 어떤 유저가 어떤 채팅방에 참여하고 있는지를 알 수 있는 다대다 매핑 테이블입니다.
 * money_drop 테이블: (MoneyDrop.java)
@@ -35,11 +42,8 @@ git clone
 * money_getter 테이블: (MoneyGetter.java)
     * money_drop 테이블의 외래키(money_drop_no)를 가지고 있고, money_drop과 1:N 관계입니다.
     * 누가 돈을 주웠는지, 얼마나 주웠는지 알 수 있습니다.
-* 테이블을 직접 확인하고 싶으시면 http://localhost:8080/h2-console 을 확인하시면 됩니다.
-    * 웹 콘솔 로그인 할때 아래와같이 입력해주세요.
-    * JDBC URL: jdbc:h2:mem:testdb
-    * id: sa
-    * password: password
+![ERD](images/erd.png)
+
 ### API를 호출해서 정상 동작했을 때 아래와 같은 일이 발생합니다.
 * 뿌리기 API: money_drop 테이블에 돈을 뿌린 사람과, 돈을 뿌릴 금액, 뿌릴 인원, 조회 유효기간, 돈받기 유효기간을 저장합니다.
 * 받기 API: money_getter 테이블에 받은 사람과 받은 금액을 저장합니다.
@@ -48,7 +52,7 @@ git clone
 * swagger 대신 curl을 사용하고 싶다면 아래에서 curl 명령을 복사 붙여넣기해서 API를 호출 해주세요.
 
 ### 분배 로직 설계
-* 돈 뿌리기 API 호출시, 돈을 뿌릴 인원만큼 랜덤 정수 리스트를 생성합니다. money_drop 테이블에 distribution 칼럼에 콤마 구분 숫자들로 저장합니다.
+* 돈 뿌리기 API 호출시, 돈을 뿌릴 인원만큼 랜덤 정수 리스트를 생성합니다. money_drop 테이블에 저장할 때, distribution 칼럼에 콤마 구분 숫자들로 저장합니다.
 * 유효기간내에, 선착순안에 돈을 받으려고 시도한 유저는 1원 이상 받을 수 있습니다. 0원을 받는 일은 없습니다.
 * 첫번째로 돈을 받을 유저는 distribution 칼럼의 첫번째 숫자 금액, 두번째로 돈을 받을 유저는 distribution 칼럼의 두번째 숫자 금액을 받습니다.
 * 뿌리는 돈이 완전 분배 될수도 있고, 안될수도 있습니다.
@@ -140,7 +144,7 @@ curl -X POST --data '{"token":"0nR"}' -H 'X-ROOM-ID: chatroom_id1' -H 'X-USER-ID
   "receivedMoney" : 9
 }
 ```
-유저번호 2인 Bill Gates가 돈을 주우려고 시도했지만 이미 모든 돈이 분배되었습니다. 403 응답을 받습니다.  
+유저번호 2인 Bill Gates가 돈을 받으려고 시도했지만 이미 모든 돈이 분배되었습니다. 403 응답을 받습니다.  
 반드시 위에서 리턴받은 토큰으로 curl 시도해주세요.
 ```bash
 curl -X POST --data '{"token":"0nR"}' -H 'X-ROOM-ID: chatroom_id1' -H 'X-USER-ID: 2' -H 'Content-Type: application/json' http://localhost:8080/money-getter
@@ -252,10 +256,12 @@ curl -X POST --data '{"token":"6ux"}' -H 'X-ROOM-ID: chatroom_id1' -H 'X-USER-ID
 * 돈이 완전 분배될수 있는지 안될 수 있는지 테스트 합니다.
     * 500원을 3명에게 뿌리려고 했는데, [150, 250, 100] 처럼 모든 돈이 분배 될 수 있습니다.
     * 500원을 3명에게 뿌리려고 했는데, [350, 20, 30] 처럼 모든 돈이 분배되지 않고, 100원이 남을 수 있습니다.
-* 랜덤 발생한 리스트 금액의 합이 절대로 뿌릴 금액보다 커지지 않음을 테스트 합니다.
+* 랜덤 생성한 리스트 금액의 합이 절대로 뿌릴 금액보다 커지지 않음을 테스트 합니다.
 ```bash
 ./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.DistributeMoneyTest"
 ```
 
 ### 그 외 통합테스트
 src/test/java 디렉토리 아래에서 확인 가능합니다.
+
+# 긴글 읽어주셔서 감사합니다.
