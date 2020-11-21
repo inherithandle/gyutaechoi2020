@@ -40,7 +40,7 @@ class MoneyDropServiceAddMoneyDropUnitTest {
     private MoneyDropService moneyDropService = new MoneyDropService();
 
     @Test
-    public void 유저가_참여하고있지않은_채팅방에_돈뿌리기_시도하면_익셉션_던진다() {
+    public void 유저가_참여하고있지않은_채팅방에_돈뿌리기_시도하면_예외를_던진다() {
         final long mockUserNo = 1L;
         final String chatRoomName = "목채팅방";
 
@@ -54,6 +54,30 @@ class MoneyDropServiceAddMoneyDropUnitTest {
     }
 
     @Test
+    public void 유저가_너무_많은_인원에게_돈뿌리기_시도하면_예외를_던진다() {
+        ChatRoomView chatRoom = new ChatRoomView();
+        chatRoom.setChatRoomNo(1L);
+        KakaoPayUserView user = new KakaoPayUserView();
+        user.getChatRooms().add(chatRoom);
+        final long mockUserNo = 1L;
+        final String chatRoomName = "목채팅방";
+        final int tooManyPeople = 10;
+
+        // 유저번호1인 유저와, 목채팅방이 존재한다고 가정한다.
+        given(kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(mockUserNo, chatRoomName))
+                .willReturn(Optional.of(user));
+
+        // 채팅방의 인원수가 10명이라고 가정한다.
+        given(chatRoomRepository.countNumOfUsersByChatRoomName(chatRoomName)).willReturn(10L);
+
+        // 10명이 있는 채팅방에서 최대 9명(본인 제외)에게 돈을 뿌릴 수 있다. 10명에게 뿌리기 시도했으므로 예외를 던져야한다.
+        assertThrows(BadRequestException.class, () -> {
+                    moneyDropService.addMoneyDrop(mockUserNo, chatRoomName, 500, tooManyPeople);
+                }
+        );
+    }
+
+    @Test
     public void 돈뿌리기_성공() {
         ChatRoomView chatRoom = new ChatRoomView();
         chatRoom.setChatRoomNo(1L);
@@ -61,6 +85,8 @@ class MoneyDropServiceAddMoneyDropUnitTest {
         user.getChatRooms().add(chatRoom);
         final long mockUserNo = 1L;
         final String chatRoomName = "목채팅방";
+
+        // 유저번호1인 유저와, 목채팅방이 존재한다고 가정한다.
         given(kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(mockUserNo, chatRoomName))
                 .willReturn(Optional.of(user));
 

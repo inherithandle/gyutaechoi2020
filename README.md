@@ -230,6 +230,7 @@ curl -X POST --data '{"token":"6ux"}' -H 'X-ROOM-ID: chatroom_id1' -H 'X-USER-ID
 ```
 **돈 뿌리기 API 유닛 테스트 MoneyDropServiceAddMoneyDropUnitTest.java**
 * 유저가 참여하고 있지 않은 채팅방에 돈을 뿌리려고 하면 예외를 던집니다.
+* 유저가 너무 많은 인원에게 돈뿌리기를 시도하면 예외를 던집니다.
 * 돈 뿌리기 API가 정상호출되면, 3자리 토큰값을 리턴합니다.
 ```bash
 ./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceAddMoneyDropUnitTest"

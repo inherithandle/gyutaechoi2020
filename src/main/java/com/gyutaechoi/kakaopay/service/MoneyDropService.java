@@ -49,6 +49,10 @@ public class MoneyDropService {
         final KakaoPayUserView user = kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(userNo, chatRoomName)
                                     .orElseThrow(() -> new BadRequestException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
 
+        if (isTooManyUsers(chatRoomName, howManyUsers)) {
+            throw new BadRequestException("너무 많은 인원수를 지정했습니다.");
+        }
+
         final Long chatRoomNo = user.getChatRooms().get(0).getChatRoomNo();
         final String token = RandomUtil.generateRandomString(3);
 
@@ -70,6 +74,18 @@ public class MoneyDropService {
 
         moneyDropRepository.save(moneyDrop);
         return token;
+    }
+
+    /**
+     *
+     * @param chatRoomName 채팅방 이름
+     * @param howManyUsers 돈뿌리기 인
+     * @return true, 채팅방 인원수(본인 제외)보다, 돈뿌리기 인원(howManyUsers)이 더 큰 경우
+     */
+    private boolean isTooManyUsers(String chatRoomName, int howManyUsers) {
+        final Long notMe = 1L;
+        Long numberOfUsers = chatRoomRepository.countNumOfUsersByChatRoomName(chatRoomName);
+        return howManyUsers > numberOfUsers - notMe;
     }
 
     /**

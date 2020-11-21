@@ -12,4 +12,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     @Query("select c from ChatRoom c inner join fetch c.userChatRooms userChatRoom inner join fetch userChatRoom.kakaoPayUser u where u.userNo = :userNo and c.chatRoomName = :chatRoomName")
     Optional<ChatRoom> getUserAndChatRoomUserNoAndChatRoomName(long userNo, String chatRoomName);
+
+    @Query("select count(uc.kakaoPayUser.userNo) from ChatRoom c inner join c.userChatRooms uc where c.chatRoomName = :chatRoomName")
+    Long countNumOfUsersByChatRoomName(String chatRoomName);
 }

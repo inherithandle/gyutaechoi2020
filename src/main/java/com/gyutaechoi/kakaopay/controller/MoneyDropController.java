@@ -50,7 +50,7 @@ public class MoneyDropController {
     @PostMapping("/money-drop")
     @ApiOperation(value = "돈뿌리기 API")
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "채팅방 인원보다 많은 인원을 지정했거나 채팅방에 참여하지 않은 유저가 돈을 뿌리려고 시도했습니다.")
+            @ApiResponse(code = 400, message = "채팅방 인원보다 많은 인원을 지정했거나 채팅방에 참여하지 않은 유저가 돈을 뿌리려고 시도했습니다.\n너무 많은 유저에게 돈을 뿌리려고 시도했습니다.")
     })
     public ResponseEntity<MoneyDropPostResponse> addMoneyDrop(@RequestHeader(USER_ID) Long userNo,
                                                               @RequestHeader(ROOM_ID) String chatRoomName,
