@@ -1,12 +1,15 @@
 # 돈 뿌리기, 받기, 조회 API 구현하기
 
-### 프로젝트 빌드를 위해 반드시 설치되어 있어야 합니다.
+### 프로젝트 빌드, 실행을 위해 반드시 설치되어 있어야 합니다.
 * Java 8 혹은 그 이후 버전
 
 ### 사용한 라이브러리, 프레임워크
-* Spring Boot
-* JPA, Hibernate
-* H2 Database
+* Spring Boot 2.3.6 RELEASE
+* Spring Framework 5.2.11.RELEASE
+* Spring Data JPA 2.3.6 RELEASE
+* JPA 2.2, Hibernate 5.4.23.Final
+* H2 Database 1.4.197
+* Gradle Wrapper 6.6.1 (빌드, 실행)
 * Java 8
 
 ### 빌드, 실행
@@ -32,8 +35,8 @@ git clone
 * chat_room 테이블 (ChatRoom.java)
     * 채팅방 정보를 담고 있습니다.
     * X-ROOM-ID 헤더 값으로 chat_room_name 칼럼을 사용합니다.
-        * chat_room_name은 테이블 전체에서 유니크해야 합니다.
-        * 한글을 사용할수 없습니다. HTTP 헤더 값은 ASCII 값만 사용하는 것이 표준입니다.
+        * chat_room_name은 테이블 전체에서 유니크하도록 테이블 설정 했습니다.
+        * 한글을 사용할 수 없습니다. HTTP 헤더 값은 ASCII 인코딩값만 사용하는 것이 표준입니다.
         * 그래도 한글을 쓰고 싶다면 URL encoding 하셔서 API를 호출해야 합니다. 
 * user_chat_room 테이블 (UserChatRoom.java)
     * 어떤 유저가 어떤 채팅방에 참여하고 있는지를 알 수 있는 다대다 매핑 테이블입니다.
@@ -42,16 +45,18 @@ git clone
 * money_getter 테이블: (MoneyGetter.java)
     * money_drop 테이블의 외래키(money_drop_no)를 가지고 있고, money_drop과 1:N 관계입니다.
     * 누가 돈을 주웠는지, 얼마나 주웠는지 알 수 있습니다.
+
+
 ![ERD](images/erd.png)
 
 ### API를 호출해서 정상 동작했을 때 아래와 같은 일이 발생합니다.
 * 뿌리기 API: money_drop 테이블에 돈을 뿌린 사람과, 돈을 뿌릴 금액, 뿌릴 인원, 조회 유효기간, 돈받기 유효기간을 저장합니다.
 * 받기 API: money_getter 테이블에 받은 사람과 받은 금액을 저장합니다.
-* 조회 API: money_drop, money_getter, kakao_pay_user를 join하여 돈 뿌리기 정보와, 뿌린 돈을 받은 사람의 정보를 얻습니다.
-* API 호출시 필요한 인자, 자세한 예외처리 사항은 swagger 문서에 명시해두었습니다. http://localhost:8080/swagger-ui.html
-* swagger 대신 curl을 사용하고 싶다면 아래에서 curl 명령을 복사 붙여넣기해서 API를 호출 해주세요.
+* 조회 API: money_drop, money_getter, kakao_pay_user를 join하여 쿼리를 호출합니다. 돈 뿌리기 정보와, 뿌린 돈을 받은 사람의 정보를 얻습니다.
+* API 호출시 필요한 인자, 자세한 예외처리 사항은 Swagger 문서에 명시해두었습니다. [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+* Swagger 대신 curl을 사용하고 싶다면 아래에서 curl 명령을 복사 붙여넣기해서 API를 호출 해주세요.
 
-### 분배 로직 설계
+### 분배 로직
 * 돈 뿌리기 API 호출시, 돈을 뿌릴 인원만큼 랜덤 정수 리스트를 생성합니다. money_drop 테이블에 저장할 때, distribution 칼럼에 콤마 구분 숫자들로 저장합니다.
 * 유효기간내에, 선착순안에 돈을 받으려고 시도한 유저는 1원 이상 받을 수 있습니다. 0원을 받는 일은 없습니다.
 * 첫번째로 돈을 받을 유저는 distribution 칼럼의 첫번째 숫자 금액, 두번째로 돈을 받을 유저는 distribution 칼럼의 두번째 숫자 금액을 받습니다.
@@ -84,6 +89,47 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 * 채팅방 번호 2, 채팅방(chatroom_id2)에는 러브레이스(1), 일론 머스크(3), 래리 페이지(10)가 대화하고 있습니다.
 * 채팅방 번호 3, 채팅방(chatroom_id3)에는 귀도 반 로썸(8), 피터 틸(4), 에이다 러브레이스(1)가 대화하고 있습니다.
 * 초기화 데이터에 대해 자세히 알고 싶다면, src/main/resource/data.sql 에서 확인 가능합니다.
+
+### 기능, 제약사항 유닛 테스트
+**뿌리기 조회 API 유닛 테스트, MoneyDropServiceGetMoneyDropUnitTest.java**
+* 토큰 정보를 찾을 수 없다면 예외를 던집니다.
+* 돈뿌린 사람만 "돈뿌리기" 정보를 조회할 수 있습니다.
+* 조회 유효기간이 지난 경우 예외를 던집니다.
+* 조회 성공시, 올바르게 응답 값을 조회할수 있는지 확인합니다.
+```bash
+./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceGetMoneyDropUnitTest" 
+```
+**돈 뿌리기 API 유닛 테스트 MoneyDropServiceAddMoneyDropUnitTest.java**
+* 유저가 참여하고 있지 않은 채팅방에 돈을 뿌리려고 하면 예외를 던집니다.
+* 유저가 너무 많은 인원에게 돈뿌리기를 시도하면 예외를 던집니다.
+* 돈 뿌리기 API가 정상호출되면, 3자리 토큰값을 리턴합니다.
+```bash
+./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceAddMoneyDropUnitTest"
+```
+**돈 받기 API 유닛 테스트 MoneyDropServiceTryToGetMoneyUnitTest.java**
+* 유저가 참여하고 있지 않은 채팅방에 있는 뿌린돈을 받으려고 시도하면 예외를 던집니다.
+* 돈뿌리기 토큰 정보를 발견하지 못하면 예외를 던집니다.
+* 돈을 뿌린 유저는 자신의 돈 받기 시도할 수 없습니다. 그런 시도를 하면 예외를 던집니다.
+* 유효기간이 지난후에 돈 받기 API를 호출하면 돈을 받을 수 없습니다.
+* 이미 돈받기 API를 호출한 유저는 돈을 받을 수 없습니다.
+* 이미 모든 유저가 돈을 주웠다면, 돈을 받을 수 없습니다.
+```bash
+./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceTryToGetMoneyUnitTest"
+```
+**분배 로직 유닛 테스트**
+* MoneyDropService.distributeMoney 메서드를 테스트 합니다.
+* 이 메서드는 뿌릴 인원, 뿌릴 금액이 정해지면 정수 리스트를 리턴합니다.
+    * 뿌릴 인원 5, 뿌릴 금액 500이면 랜덤 리스트 [100, 50, 30, 2, 200] 처럼 발생합니다.
+* 돈이 완전 분배될수 있는지 안될 수 있는지 테스트 합니다.
+    * 500원을 3명에게 뿌리려고 했는데, [150, 250, 100] 처럼 모든 돈이 분배 될 수 있습니다.
+    * 500원을 3명에게 뿌리려고 했는데, [350, 20, 30] 처럼 모든 돈이 분배되지 않고, 100원이 남을 수 있습니다.
+* 랜덤 생성한 리스트 금액의 합이 절대로 뿌릴 금액보다 커지지 않음을 테스트 합니다.
+```bash
+./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.DistributeMoneyTest"
+```
+
+### 그 외 통합테스트
+src/test/java 디렉토리 아래에서 확인 가능합니다.
 
 ### API 사용 시나리오 1 
 뿌리기 API를 호출하여 토큰 정보를 얻습니다.
@@ -222,46 +268,4 @@ curl -X POST --data '{"token":"6ux"}' -H 'X-ROOM-ID: chatroom_id1' -H 'X-USER-ID
   "message" : "유효기간이 지났습니다."
 }
 ```
-
-### 기능, 제약사항 유닛 테스트
-**뿌리기 조회 API 유닛 테스트, MoneyDropServiceGetMoneyDropUnitTest.java**
-* 토큰 정보를 찾을 수 없다면 예외를 던집니다.
-* 돈뿌린 사람만 "돈뿌리기" 정보를 조회할 수 있다.
-* 조회 유효기간이 지난 경우 예외를 던집니다.
-* 조회 성공시, 올바르게 응답 값을 조회할수 있는지 확인합니다.
-```bash
-./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceGetMoneyDropUnitTest" 
-```
-**돈 뿌리기 API 유닛 테스트 MoneyDropServiceAddMoneyDropUnitTest.java**
-* 유저가 참여하고 있지 않은 채팅방에 돈을 뿌리려고 하면 예외를 던집니다.
-* 유저가 너무 많은 인원에게 돈뿌리기를 시도하면 예외를 던집니다.
-* 돈 뿌리기 API가 정상호출되면, 3자리 토큰값을 리턴합니다.
-```bash
-./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceAddMoneyDropUnitTest"
-```
-**돈 받기 API 유닛 테스트 MoneyDropServiceTryToGetMoneyUnitTest.java**
-* 유저가 참여하고 있지 않은 채팅방에 있는 뿌린돈을 받으려고 시도하면 예외를 던집니다.
-* 돈뿌리기 토큰 정보를 발견하지 못하면 예외를 던집니다.
-* 돈을 뿌린 유저은 자신의 돈 받기 시도할 수 없습니다. 그런 시도하면 예외를 던집니다.
-* 유효기간이 지난후에 돈 받기 API를 호출하면 돈을 받을 수 없습니다.
-* 이미 돈받기 API를 호출한 유저는 돈을 받을 수 없습니다.
-* 이미 모든 유저가 돈을 주웠다면, 돈을 받을 수 없습니다.
-```bash
-./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceTryToGetMoneyUnitTest"
-```
-**분배 로직 유닛 테스트**
-* MoneyDropService.distributeMoney 메서드를 테스트 합니다.
-* 이 메서드는 뿌릴 인원, 뿌릴 금액이 정해지면 정수 리스트를 리턴합니다.
-    * 뿌릴 인원 5, 뿌릴 금액 500이면 랜덤 리스트 [100, 50, 30, 2, 200] 처럼 발생합니다.
-* 돈이 완전 분배될수 있는지 안될 수 있는지 테스트 합니다.
-    * 500원을 3명에게 뿌리려고 했는데, [150, 250, 100] 처럼 모든 돈이 분배 될 수 있습니다.
-    * 500원을 3명에게 뿌리려고 했는데, [350, 20, 30] 처럼 모든 돈이 분배되지 않고, 100원이 남을 수 있습니다.
-* 랜덤 생성한 리스트 금액의 합이 절대로 뿌릴 금액보다 커지지 않음을 테스트 합니다.
-```bash
-./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.DistributeMoneyTest"
-```
-
-### 그 외 통합테스트
-src/test/java 디렉토리 아래에서 확인 가능합니다.
-
 # 긴글 읽어주셔서 감사합니다.

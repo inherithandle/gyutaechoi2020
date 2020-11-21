@@ -4,6 +4,10 @@ import java.security.SecureRandom;
 import java.util.Locale;
 import java.util.Random;
 
+/**
+ * package-private class.
+ * RandomUtil.java만 이 클래스를 사용할 수 있다.
+ */
 class RandomString {
 
     /**
@@ -27,6 +31,5 @@ class RandomString {
         this.random = new SecureRandom();
         this.buf = new char[length];
     }
-
 
 }
