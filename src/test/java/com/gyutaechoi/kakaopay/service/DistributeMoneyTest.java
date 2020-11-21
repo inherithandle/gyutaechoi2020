@@ -2,18 +2,16 @@ package com.gyutaechoi.kakaopay.service;
 
 import com.gyutaechoi.kakaopay.entity.MoneyDrop;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.BDDMockito.given;
+import static org.hamcrest.Matchers.*;
 
 /**
  * 돈 분배 로직 단위 테스
@@ -40,7 +38,7 @@ public class DistributeMoneyTest {
             if (sum == firstBalance) {
                 perfectDistributionCnt++;
             }
-            assertEquals(howManyUsers, integers.size());
+            assertThat(integers.size(), greaterThan(1));
             assertThat(sum, lessThanOrEqualTo(firstBalance));
 
         }
@@ -52,55 +50,59 @@ public class DistributeMoneyTest {
     }
 
     /**
-     * 분배 로직은 돈 받을 사람에게 1원 이상 주기로 결정했습니다.
-     * 500원 뿌리기, 3명 설정 했는데.
-     * 난수 생성기가 첫번째에 500원을 뽑은 경우 분배 로직을 재시도하는 로직을 타야 한다.
+     * 뿌릴 인원과, 뿌릴 금액의 차이가 별로 나지 않을 떄
+     * 뿌릴 인원 3, 뿌릴 금액 4
      */
     @Test
-    public void generateAndRetryTest() {
-        final int howManyUsers = 3;
-        final int firstBalance = 500;
+    public void randomTest2() {
+        final int howManyUsers = 500;
+        final int firstBalance = 501;
         MoneyDrop moneyDrop = new MoneyDrop();
         moneyDrop.setFirstBalance(firstBalance);
         moneyDrop.setHowManyUsers(howManyUsers);
-
-        Random r = Mockito.mock(Random.class);
-        given(r.nextInt(499)).willReturn(499); // 난수 생성기가 500원을 리턴한다고 가정한다.
-        given(r.nextInt(499)).willReturn(99); // 난수 생성기가 100원을 리턴한다고 가정한다.
-        given(r.nextInt(399)).willReturn(199); // 난수 생성기가 200원을 리턴한다고 가정한다.
-        given(r.nextInt(199)).willReturn(50); // 난수 생성기가 51원을 리턴한다고 가정한다.
+        Random r = new SecureRandom();
 
         List<Integer> integers = moneyDropService.distributeMoney(moneyDrop, r);
-        assertEquals(3, integers.size());
-        assertThat(integers.toArray(), is(new int[] {100, 200, 51}));
+        assertThat(integers.size(), greaterThan(0));
+        System.out.println(integers);
     }
 
     /**
-     * 분배 로직은 돈 받을 사람에게 1원 이상 주기로 결정했습니다.
-     * 500원 뿌리기, 3명 설정 했는데.
-     * 첫번째에서 300원, 두번째에서 200원 걸린경우, 3번째 사람에게 돈을 줄 수 없기 때문
-     * 분배로직을 재시도해야 합니다.
+     * 지정된 금액보다 더 많은 금액이 분배되지 않음을 체크
+     * 500원을 뿌리려고 했는데 600원이 뿌려지지 않음을 확인한다.
      */
     @Test
-    public void generateAndRetryTest2() {
-        final int howManyUsers = 3;
-        final int firstBalance = 500;
-        MoneyDrop moneyDrop = new MoneyDrop();
-        moneyDrop.setFirstBalance(firstBalance);
-        moneyDrop.setHowManyUsers(howManyUsers);
+    public void distributeTooMuchMoneyToTooManyUsers() {
+        final int howManyUsers = 1500;
+        final int money = 2_000_000_000;
+        final int NUMBER_OF_TRIALS = 1000;
 
-        Random r = Mockito.mock(Random.class);
-        given(r.nextInt(499)).willReturn(299); // 난수 생성기가 300원을 리턴한다고 가정한다.
-        given(r.nextInt(199)).willReturn(199); // 난수 생성기가 200원을 리턴한다고 가정한다.
+        for (int i = 1; i <= NUMBER_OF_TRIALS; i++) {
+            MoneyDrop moneyDrop = new MoneyDrop();
+            moneyDrop.setFirstBalance(money);
+            moneyDrop.setHowManyUsers(howManyUsers);
+            Random r = new SecureRandom();
 
-        given(r.nextInt(499)).willReturn(100); // 난수 생성기가 101원을 리턴한다고 가정한다.
-        given(r.nextInt(398)).willReturn(50); // 난수 생성기가 51원을 리턴한다고 가정한다.
-        given(r.nextInt(347)).willReturn(35); // 난수 생성기가 36원을 리턴한다고 가정한다.
+            List<Integer> integers = moneyDropService.distributeMoney(moneyDrop, r);
+            Integer sum = integers.stream().collect(Collectors.summingInt(Integer::intValue));
 
+            if (sum > money) {
+                throw new RuntimeException("[심각] 유저가 지정한 금액보다 많은 돈이 분배되었다!");
+            }
+            assertThat(integers.size(), greaterThan(0));
+            System.out.println(i + "th try : " + integers);
+        }
+    }
 
-        List<Integer> integers = moneyDropService.distributeMoney(moneyDrop, r);
-        assertEquals(3, integers.size());
-        assertThat(integers.toArray(), is(new int[] {101, 51, 36}));
+    @Test
+    public void indexTest() {
+        List<Integer> integers = new ArrayList<>();
+        Collections.addAll(integers, 1,23, 0, 1, 0);
+
+        assertThat(moneyDropService.getMoneyFrom(integers, 4), equalTo(0));
+        assertThat(moneyDropService.getMoneyFrom(integers, 5), equalTo(0));
+        assertThat(moneyDropService.getMoneyFrom(integers, 6), equalTo(0));
+        assertThat(moneyDropService.getMoneyFrom(integers, 7), equalTo(0));
     }
 
 }

@@ -50,7 +50,7 @@ public class MoneyDropService {
                                     .orElseThrow(() -> new BadRequestException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
 
         if (isTooManyUsers(chatRoomName, howManyUsers)) {
-            throw new BadRequestException("너무 많은 인원수를 지정했습니다.");
+            throw new BadRequestException("채팅방 인원수보다 많은 인원수를 지정했습니다.");
         }
 
         final Long chatRoomNo = user.getChatRooms().get(0).getChatRoomNo();
@@ -120,9 +120,8 @@ public class MoneyDropService {
             throw new ForbiddenException("이미 돈을 지급 받았습니다.");
         }
 
-        final int index = moneyDrop.getNumOfMoneyGetters();
         final List<Integer> distribution = moneyDrop.getDistribution();
-        final int moneyToGive = distribution.get(index);
+        final int moneyToGive = getMoneyFrom(distribution, moneyDrop.getNumOfMoneyGetters());
 
         MoneyGetter moneyGetter = new MoneyGetter();
         moneyGetter.setAmount(moneyToGive);
@@ -195,27 +194,25 @@ public class MoneyDropService {
         final int howManyUsers = moneyDrop.getHowManyUsers();
 
         ArrayList<Integer> result = new ArrayList<>();
-        boolean distributionFinished = false;
-        while(!distributionFinished) {
-            int money = 0;
-            for (int i = 0; i < howManyUsers; i++) {
-                money = RandomUtil.generateRandomInteger(r, 1, currentBalance);
-                currentBalance -= money;
-                if (currentBalance == 0 && i != howManyUsers - 1) {
-                    break;
-                }
-                result.add(money);
+        int money;
+        for (int i = 0; i < howManyUsers; i++) {
+            if (currentBalance == 0) {
+                result.add(0);
+                break;
             }
-
-            if (result.size() == howManyUsers)
-                distributionFinished = true;
-            else {
-                currentBalance = moneyDrop.getFirstBalance();
-                result.clear();
-            }
-
+            money = RandomUtil.generateRandomInteger(r, currentBalance);
+            currentBalance -= money;
+            result.add(money);
         }
+
         return result;
+    }
+
+    public int getMoneyFrom(List<Integer> distribution, final int index) {
+        if (index > distribution.size() - 1) {
+            return 0;
+        }
+        return distribution.get(index);
     }
 
 

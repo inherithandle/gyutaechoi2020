@@ -90,6 +90,9 @@ class MoneyDropServiceAddMoneyDropUnitTest {
         given(kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(mockUserNo, chatRoomName))
                 .willReturn(Optional.of(user));
 
+        // 채팅방에 4명이 존재한다고 가정한다.
+        given(chatRoomRepository.countNumOfUsersByChatRoomName(chatRoomName)).willReturn(4L);
+
         final String token = moneyDropService.addMoneyDrop(mockUserNo, chatRoomName, 500, 3);
 
         assertEquals(3, token.length());

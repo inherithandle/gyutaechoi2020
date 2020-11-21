@@ -8,8 +8,10 @@ public class RandomUtil {
         return new RandomString(length).nextString();
     }
 
-    public static int generateRandomInteger(Random r, final int min, final int max) {
-        if (min == max) return 1;
-        return r.nextInt(max - min) + min;
+    /**
+     * 0-max 랜덤 정수를 생성한다.
+     */
+    public static int generateRandomInteger(Random r, final int max) {
+        return r.nextInt(max + 1);
     }
 }

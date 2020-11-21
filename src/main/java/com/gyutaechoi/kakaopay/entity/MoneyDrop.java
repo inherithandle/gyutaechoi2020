@@ -35,7 +35,7 @@ public class MoneyDrop {
     private Integer numOfMoneyGetters; // 뿌린 돈을 주운 사람 수
 
     @Convert(converter = IntegerListConverter.class)
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, length = 2000)
     private List<Integer> distribution; // 돈 분배
 
     @Column(nullable = false)
