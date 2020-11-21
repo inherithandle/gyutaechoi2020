@@ -5,6 +5,8 @@ import com.gyutaechoi.kakaopay.exception.BadRequestException;
 import com.gyutaechoi.kakaopay.exception.ForbiddenException;
 import com.gyutaechoi.kakaopay.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -31,6 +33,14 @@ public class ApiExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     public @ResponseBody ApiErrorResponse handle401(Exception e) {
         ApiErrorResponse res = new ApiErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        return res;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public @ResponseBody ApiErrorResponse validatorFindsError(MethodArgumentNotValidException e) {
+        ObjectError error = e.getBindingResult().getAllErrors().get(0);
+        ApiErrorResponse res = new ApiErrorResponse(HttpStatus.BAD_REQUEST.value(), error.getDefaultMessage());
         return res;
     }
 

@@ -147,8 +147,13 @@ public class MoneyDropService {
      */
     @Transactional(readOnly = true)
     public MoneyDropResponse getMoneyDrop(final long userNo, final String token) {
+        final NotFoundException e = new NotFoundException("Token 정보를 DB에서 찾을 수 없습니다.");
+        if (token.length() != 3) {
+            throw e;
+        }
+
         final MoneyDrop moneyDrop = moneyDropRepository.findMoneyDropAndMoneyGetterByToken(token)
-                .orElseThrow(() -> new NotFoundException("Token 정보를 DB에서 찾을 수 없습니다."));
+                .orElseThrow(() -> e);
 
         // 타인의 돈 뿌리기 정보를 조회할 수 없다.
         if (userNo != moneyDrop.getDropper().getUserNo()) {

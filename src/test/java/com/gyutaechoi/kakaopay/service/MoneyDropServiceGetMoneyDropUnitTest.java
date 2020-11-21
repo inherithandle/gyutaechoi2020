@@ -36,6 +36,13 @@ public class MoneyDropServiceGetMoneyDropUnitTest {
     private static final String mockToken = "aB_";
 
     @Test
+    public void 토큰_길이가_3자리가_아니면_예외를_던진다() {
+        assertThrows(NotFoundException.class, () -> {
+            moneyDropService.getMoneyDrop(mockUserNo, "abcdefgt");
+        });
+    }
+
+    @Test
     public void 토큰_정보가_유효하지_않으면_예외를_던진다() {
         // token으로 돈뿌리기를 조회시도 했지만, 존재하지 않는다고 가정한다.
         given(moneyDropRepository.findMoneyDropAndMoneyGetterByToken(mockToken))

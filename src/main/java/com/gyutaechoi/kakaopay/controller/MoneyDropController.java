@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
@@ -56,7 +57,7 @@ public class MoneyDropController {
     })
     public ResponseEntity<MoneyDropPostResponse> addMoneyDrop(@ApiParam(defaultValue = "1") @RequestHeader(USER_ID) Long userNo,
                       @ApiParam(defaultValue = "chatroom_id1") @RequestHeader(ROOM_ID) String chatRoomName,
-                      @RequestBody MoneyDropRequest moneyDropRequest) throws UnsupportedEncodingException {
+                      @Valid @RequestBody MoneyDropRequest moneyDropRequest) throws UnsupportedEncodingException {
         chatRoomName = URLDecoder.decode(chatRoomName, "UTF-8"); // 헤더에 URL 인코딩된 한글 입력한 경우를 대비해서..
         final String token = moneyDropService.addMoneyDrop(userNo, chatRoomName,
                 moneyDropRequest.getMoneyToDrop(), moneyDropRequest.getHowManyUsers());

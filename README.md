@@ -92,6 +92,7 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 
 ### 기능, 제약사항 유닛 테스트
 **뿌리기 조회 API 유닛 테스트, MoneyDropServiceGetMoneyDropUnitTest.java**
+* 길이가 3자리가 아닌 토큰이 들어오면 예외를 던집니다.
 * 토큰 정보를 찾을 수 없다면 예외를 던집니다.
 * 돈뿌린 사람만 "돈뿌리기" 정보를 조회할 수 있습니다.
 * 조회 유효기간이 지난 경우 예외를 던집니다.
@@ -106,6 +107,13 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 ```bash
 ./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceAddMoneyDropUnitTest"
 ```
+**돈 뿌리기 요청 모델 유닛 테스트 MoneyDropControllerTest.java**
+* 뿌릴 금액, 뿌릴 인원이 양수 인지 확인 합니다. `@Positive`
+* Custom Validator를 사용하여 뿌릴 금액이 뿌릴 인원 보다 큰 값인지 확인합니다. (MoneyShouldBeGreaterThanUsers.java)
+```bash
+./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.controller.MoneyDropControllerTest"
+```
+
 **돈 받기 API 유닛 테스트 MoneyDropServiceTryToGetMoneyUnitTest.java**
 * 유저가 참여하고 있지 않은 채팅방에 있는 뿌린돈을 받으려고 시도하면 예외를 던집니다.
 * 돈뿌리기 토큰 정보를 발견하지 못하면 예외를 던집니다.
