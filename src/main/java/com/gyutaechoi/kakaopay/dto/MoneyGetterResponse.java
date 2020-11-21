@@ -1,5 +1,9 @@
 package com.gyutaechoi.kakaopay.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel(description = "돈 받은 유저 응답")
 public class MoneyGetterResponse {
 
     private long userNo;
@@ -8,6 +12,7 @@ public class MoneyGetterResponse {
 
     private String username;
 
+    @ApiModelProperty(notes = "받은 돈")
     private int amount;
 
     public long getUserNo() {

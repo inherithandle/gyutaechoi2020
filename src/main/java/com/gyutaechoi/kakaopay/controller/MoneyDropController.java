@@ -2,6 +2,9 @@ package com.gyutaechoi.kakaopay.controller;
 
 import com.gyutaechoi.kakaopay.dto.*;
 import com.gyutaechoi.kakaopay.service.MoneyDropService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +27,15 @@ public class MoneyDropController {
      * @return
      */
     @GetMapping("/money-drop")
+    @ApiOperation(value = "돈뿌리기 조회 API")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "돈뿌리기 정보를 리턴합니다."),
+            @ApiResponse(code = 403, message = "타인의 돈뿌리기 조회를 시도했습니다."),
+            @ApiResponse(code = 404, message = "토큰에 대한 정보가 DB에 없습니다."),
+            @ApiResponse(code = 400, message = "유효하지 않은 인자(토큰, 유저번호 헤더값)를 보냈거나 조회 유효기간이 지났습니다.")
+    })
     public ResponseEntity<MoneyDropResponse> getMoneyDrop(@RequestParam("token") String token,
-                                                          @RequestHeader(USER_ID) String xUserId) {
+                                                          @RequestHeader(USER_ID) Long xUserId) {
         final MoneyDropResponse moneyDrop = moneyDropService.getMoneyDrop(Long.valueOf(xUserId), token);
         return ResponseEntity.ok(moneyDrop);
     }
@@ -38,6 +48,10 @@ public class MoneyDropController {
      * @return
      */
     @PostMapping("/money-drop")
+    @ApiOperation(value = "돈뿌리기 API")
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "채팅방 인원보다 많은 인원을 지정했거나 채팅방에 참여하지 않은 유저가 돈을 뿌리려고 시도했습니다.")
+    })
     public ResponseEntity<MoneyDropPostResponse> addMoneyDrop(@RequestHeader(USER_ID) Long userNo,
                                                               @RequestHeader(ROOM_ID) String chatRoomName,
                                                               @RequestBody MoneyDropRequest moneyDropRequest) throws UnsupportedEncodingException {
@@ -54,6 +68,11 @@ public class MoneyDropController {
      * @return
      */
     @PostMapping("/money-getter")
+    @ApiOperation(value = "돈 받기 API")
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "받기 유효기간이 지났거나, 자신이 뿌린 돈을 자신이 받으려고 했습니다.\nDB에 존재하지 않는 유저입니다.\n유저가 채팅방에 참여하고 있지 않습니다."),
+            @ApiResponse(code = 403, message = "이미 돈을 받았거나, 뿌릴 돈을 모두 다른 유저들에게 나눠주었습니다.")
+    })
     public ResponseEntity<MoneyGetterPostResponse> addMoneyGetter(@RequestHeader(USER_ID) Long userNo,
                                             @RequestHeader(ROOM_ID) String chatRoomName,
                                             @RequestBody MoneyGetterRequest req) throws UnsupportedEncodingException {

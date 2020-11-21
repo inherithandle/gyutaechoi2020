@@ -44,6 +44,8 @@ git clone
 * 뿌리기 API: money_drop 테이블에 돈을 뿌린 사람과, 돈을 뿌릴 금액, 뿌릴 인원, 조회 유효기간, 돈받기 유효기간을 저장합니다.
 * 받기 API: money_getter 테이블에 받은 사람과 받은 금액을 저장합니다.
 * 조회 API: money_drop, money_getter, kakao_pay_user를 join하여 돈 뿌리기 정보와, 뿌린 돈을 받은 사람의 정보를 얻습니다.
+* API 호출시 필요한 인자, 자세한 예외처리 사항은 swagger 문서에 명시해두었습니다. http://localhost:8080/swagger-ui.html
+* swagger 대신 curl을 사용하고 싶다면 아래에서 curl 명령을 복사 붙여넣기해서 API를 호출 해주세요.
 
 ### 분배 로직 설계
 * 돈 뿌리기 API 호출시, 돈을 뿌릴 인원만큼 랜덤 정수 리스트를 생성합니다. money_drop 테이블에 distribution 칼럼에 콤마 구분 숫자들로 저장합니다.

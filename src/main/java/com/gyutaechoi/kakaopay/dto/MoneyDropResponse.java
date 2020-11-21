@@ -1,19 +1,24 @@
 package com.gyutaechoi.kakaopay.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 돈뿌리기 조회 API 응답 클래스
- */
+@ApiModel(description = "돈 뿌리기 API 조회")
 public class MoneyDropResponse {
 
+    @ApiModelProperty(notes = "돈을 뿌린 시간")
     LocalDateTime createdDateTime; // 돈 뿌린 시간
 
+    @ApiModelProperty(notes = "뿌릴 금액")
     private int moneyToDrop; // 뿌린 금액
 
+    @ApiModelProperty(notes = "받기 완료된 금액")
     private int droppedMoney; // 받기 완료된 금액
 
+    @ApiModelProperty(notes = "돈 받은 유저들")
     List<MoneyGetterResponse> moneyGetters;
 
     public LocalDateTime getCreatedDateTime() {
