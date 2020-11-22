@@ -80,6 +80,22 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
     }
 
     @Test
+    public void token_길이가_3이_아닌_토큰_익셉션_던진다() {
+        // 유저번호 1은 "목채팅방"에 참여하고 있다고 가정한다.
+        given(kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(mockUserNo, mockChatRoomName))
+                .willReturn(Optional.of(getKakaoPayUserView(1L)));
+
+        assertThrows(NotFoundException.class, () -> {
+            moneyDropService.tryToGetMoneyFromMoneyDrop(mockUserNo, mockChatRoomName, "Zb");
+        });
+
+
+        assertThrows(NotFoundException.class, () -> {
+            moneyDropService.tryToGetMoneyFromMoneyDrop(mockUserNo, mockChatRoomName, mockToken + "abcd");
+        });
+    }
+
+    @Test
     public void 돈을_뿌린_사람은_자신이_뿌린돈_주울수_없다() {
         final LocalDateTime now = LocalDateTime.now();
 

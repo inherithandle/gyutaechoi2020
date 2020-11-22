@@ -95,14 +95,18 @@ public class MoneyDropService {
      * @param userNo, 돈 줍기를 시도하는 유저
      * @param chatRoomName, 채팅방 이름
      * @param token, "돈 뿌리기"에 대한 토큰
-     * @return Integer, 유저가 받은 금액을 리턴합니다.
+     * @return MoneyGetterPostResponse, 유저가 받은 금액을 리턴합니다.
      */
     @Transactional
     public MoneyGetterPostResponse tryToGetMoneyFromMoneyDrop(long userNo, String chatRoomName, String token) {
         kakaoPayUserViewRepository.getUserAndChatRoomUserNoAndChatRoomName(userNo, chatRoomName)
                 .orElseThrow(() -> new BadRequestException("유저가 존재하지 않거나 유저가 채팅방이 참여하고 있지 않습니다."));
-        MoneyDrop moneyDrop = moneyDropRepository.findMoneyDropByToken(token)
-                                    .orElseThrow(() -> new NotFoundException("Token 정보를 DB에서 찾을 수 없습니다."));
+
+        final NotFoundException e = new NotFoundException("Token 정보를 DB에서 찾을 수 없습니다.");
+        if (token.length() != 3) {
+            throw e;
+        }
+        MoneyDrop moneyDrop = moneyDropRepository.findMoneyDropByToken(token).orElseThrow(() -> e);
 
         if (userNo == moneyDrop.getDropper().getUserNo()) {
             throw new BadRequestException("돈을 뿌린 사람은 받을 수 없습니다!");
