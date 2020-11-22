@@ -215,8 +215,9 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
         moneyDrop.setNumOfMoneyGetters(numOfMoneyGetters);
         moneyDrop.setMoneyDropNo(1L);
 
-        List<Integer> integers = moneyDropService.distributeMoney(moneyDrop, new SecureRandom());
-        moneyDrop.setDistribution(integers);
+        DistributeMoneyService distributeService = new DistributeMoneyAllUsersService();
+        List<Integer> distribution = distributeService.distributeMoney(500, howManyUsers, new SecureRandom());
+        moneyDrop.setDistribution(distribution);
         return moneyDrop;
     }
 

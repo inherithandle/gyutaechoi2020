@@ -36,6 +36,9 @@ class MoneyDropServiceAddMoneyDropUnitTest {
     @Mock
     private ChatRoomRepository chatRoomRepository;
 
+    @Mock
+    private DistributeMoneyServiceManager distributeMoneyServiceManager;
+
     @InjectMocks
     private MoneyDropService moneyDropService = new MoneyDropService();
 

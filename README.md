@@ -50,22 +50,24 @@ git clone
 ![ERD](images/erd.png)
 
 ### API를 호출해서 정상 동작했을 때 아래와 같은 일이 발생합니다.
-* 뿌리기 API: money_drop 테이블에 돈을 뿌린 사람과, 돈을 뿌릴 금액, 뿌릴 인원, 조회 유효기간, 돈받기 유효기간을 저장합니다.
-* 받기 API: money_getter 테이블에 받은 사람과 받은 금액을 저장합니다.
+* 뿌리기 API: money_drop 테이블에 돈을 뿌린 사람과(외래키), 돈을 뿌릴 금액, 뿌릴 인원, 조회 유효기간, 돈받기 유효기간을 저장합니다.
+* 받기 API: money_getter 테이블에 받은 사람(외래키)과 받은 금액을 저장합니다.
 * 조회 API: money_drop, money_getter, kakao_pay_user를 join하여 쿼리를 호출합니다. 돈 뿌리기 정보와, 뿌린 돈을 받은 사람의 정보를 얻습니다.
 * API 호출시 필요한 인자, 자세한 예외처리 사항은 Swagger 문서에 명시해두었습니다. [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 * Swagger 대신 curl을 사용하고 싶다면 아래에서 curl 명령을 복사 붙여넣기해서 API를 호출 해주세요.
 
 ### 분배 로직
-* 돈 뿌리기 API 호출시, 돈을 뿌릴 인원만큼 랜덤 정수 리스트를 생성합니다. money_drop 테이블에 저장할 때, distribution 칼럼에 콤마 구분 숫자들로 저장합니다.
+* 돈 뿌리기 API 호출시, 랜덤 정수 리스트를 생성합니다. money_drop 테이블에 저장할 때, distribution(varchar) 칼럼에 콤마 구분 숫자들로 저장합니다.
 * 첫번째로 돈을 받을 유저는 distribution 칼럼의 첫번째 숫자 금액, 두번째로 돈을 받을 유저는 distribution 칼럼의 두번째 숫자 금액을 받습니다.
-* 뿌리는 돈이 완전 분배 될수도 있고, 안될수도 있습니다.
-    * 500원을 3명에게 뿌리려고 했는데, [150, 250, 100] 처럼 모든 돈이 분배 될 수 있습니다.
-    * 500원을 3명에게 뿌리려고 했는데, [350, 20, 30] 처럼 모든 돈이 분배되지 않고, 100원이 남을 수 있습니다.
-* 운이 나쁘면 0원을 받을 수도 있습니다.
-    * 500원 3명에게 뿌리려고 했는데, [0, 250, 3]이 나올 수 있습니다.
-* 돈을 10명에게 분배하려고 했는데 10명이 모두 못받는 확률이 존재합니다.
-    * 5000원을 10명에게 뿌리려고 했는데, [0, 4000, 100, 200, 700, 0]이 나와 6번째 이후 사람은 돈을 못받을 수 있습니다.
+* 돈 받는 인원이 20명 이하일 때, 돈을 모든 사람에게 1원 이상 분배합니다.
+    * 10원을 9명에게 분배할 때, [1, 1, 1, 2, 1, 1, 1, 1, 1]처럼 모든 돈이 모든 사람에게 분배됩니다.
+    * 누군가가 0원을 받는일은 없습니다.
+    * 이 동작들을 테스트 했습니다. `DistributeMoneyAllUsersServiceTest.java`
+* 돈 받는 인원이 21명 이상일 때, 돈이 모든 사람에게 분배되지 않을 수 있습니다.
+    * 누군가는 0원을 받을 수 있습니다.
+    * 20억을 1500명에게 모든 사람에게 1원 이상 분배한다면, distribution 칼럼이 너무 길어집니다. 길어지는 것을 막아줍니다.
+    * 21명에게 500원을 뿌릴 때, 랜덤 정수 리스트 [100, 0, 200, 195, 1, 1, 1, 1, 1, 0]이 생성되어 10번째 이후 유저들은 0원을 받을 수 있습니다.
+    * 이 동작을 테스트 했습니다. `DistributeMoneyNotAllUsersServiceTest.java`
 
 ### 초기 데이터 설정
 src/main/resource/data.sql를 이용하여 초기 데이터(유저정보, 채팅방정보)를 자동 생성합니다.  
@@ -107,6 +109,7 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 * 유저가 참여하고 있지 않은 채팅방에 돈을 뿌리려고 하면 예외를 던집니다.
 * 유저가 너무 많은 인원에게 돈뿌리기를 시도하면 예외를 던집니다.
     * 채팅방 인원이 10명이면 9명(본인제외)까지 지정할 수 있습니다.
+    * 채팅방 인원이 10명이고, 500원을 15명에 뿌리려고 시도하면 예외를 던집니다.
 * 돈 뿌리기 API가 정상호출되면, 3자리 토큰값을 리턴합니다.
 ```bash
 ./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceAddMoneyDropUnitTest"
@@ -114,6 +117,7 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 **돈 뿌리기 요청 모델 유닛 테스트 MoneyDropControllerTest.java**
 * 뿌릴 금액, 뿌릴 인원이 양수 인지 확인 합니다. `@Positive`
 * Custom Validator를 사용하여 뿌릴 금액이 뿌릴 인원 보다 큰 값인지 확인합니다. (MoneyShouldBeGreaterThanUsers.java)
+    * 돈받기 인원이 5명인데 4원을 뿌리면 400 응답을 리턴합니다.
 ```bash
 ./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.controller.MoneyDropControllerTest"
 ```
@@ -129,21 +133,23 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 ./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.MoneyDropServiceTryToGetMoneyUnitTest"
 ```
 **분배 로직 유닛 테스트**
-* MoneyDropService.distributeMoney 메서드를 테스트 합니다.
-* 이 메서드는 뿌릴 인원, 뿌릴 금액이 정해지면 정수 리스트를 리턴합니다.
-    * 뿌릴 인원 5, 뿌릴 금액 500이면 랜덤 리스트 [100, 50, 30, 2, 200] 처럼 발생합니다.
-* 돈이 완전 분배될수 있는지 안될 수 있는지 테스트 합니다.
-    * 500원을 3명에게 뿌리려고 했는데, [150, 250, 100] 처럼 모든 돈이 분배 될 수 있습니다.
-    * 500원을 3명에게 뿌리려고 했는데, [350, 20, 30] 처럼 모든 돈이 분배되지 않고, 100원이 남을 수 있습니다.
-* 500원을 뿌렸는데, 700원이 분배되는 일이 절대로 발생해서는 안됩니다. 유닛테스트로 확인합니다.
+* DistributeMoneyAllUsersService, DistributeMoneyNotAllUsersService 클래스를 테스트합니다.
+* 분배된 돈의 합이 뿌릴 돈과 같은지 확인합니다.
+    * 어떠한 경우에도 분배된 돈의 합이 뿌린 돈보다 크지 않음을 확인합니다.
+* 극단적인 값을 테스트 합니다.
+    * 뿌릴 금액 10원, 받는 인원 9명일 때 제대로 동작하는지 테스트합니다.
+        * 1명만 2원을 받고, 8명이 1원을 받았는지 체크합니다.
+    * 뿌릴 금액 20억, 받는 인원 1500명이여도 제대로 동작하는지 체크 합니다.
 ```bash
-./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.DistributeMoneyTest"
+./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.DistributeMoneyAllUsersServiceTest"
+./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.DistributeMoneyNotAllUsersServiceTest"
 ```
 
 ### 그 외 유닛, 통합테스트
 * @Repository 객체들이 제가 원하는대로 쿼리를 생성했는지 확인했습니다. (*RepositoryTest.java)
-* MoneyDropService 객체에, Repository 객체들이 잘 주입되어 DB와 연동되는지 확인했습니다. (MoneyDropService.java)
-* 그 외 30개 이상의 테스트 케이스
+* MoneyDropService 객체에, Repository 객체들이 잘 주입되어 DB와 연동되는지 확인했습니다. (MoneyDropServiceTest.java)
+* 난수가 범위에 맞게 잘 생성되는지 확인합니다.
+* 그 외 35개 이상의 테스트 케이스
 
 ### API 사용 시나리오 1 
 뿌리기 API를 호출하여 토큰 정보를 얻습니다.

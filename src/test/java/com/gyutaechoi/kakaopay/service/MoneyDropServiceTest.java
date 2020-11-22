@@ -24,6 +24,9 @@ class MoneyDropServiceTest {
     private MoneyGetterRepository moneyGetterRepository;
 
     @Autowired
+    private DistributeMoneyServiceManager distributeMoneyServiceManager;
+
+    @Autowired
     private MoneyDropService moneyDropService;
 
     @Test

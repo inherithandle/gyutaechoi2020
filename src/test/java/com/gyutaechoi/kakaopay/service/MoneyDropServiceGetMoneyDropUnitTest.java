@@ -91,7 +91,7 @@ public class MoneyDropServiceGetMoneyDropUnitTest {
         final LocalDateTime threeDaysLater = now.plusDays(3L); // 지금시간으로부터 3일뒤
 
         // 유저가 500원 뿌린 정보가 DB에서 발견 가능한다고 가정한다.
-        // 어떤 유저도 줍지 않았다고 가정한다.
+        // 어떤 유저도 돈을 줍지 않았다고 가정한다.
         given(moneyDropRepository.findMoneyDropAndMoneyGetterByToken(mockToken))
                 .willReturn(Optional.of(getMoneyDrop(1L, threeDaysLater, 500)));
 

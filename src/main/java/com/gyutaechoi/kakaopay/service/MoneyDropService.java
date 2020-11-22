@@ -21,7 +21,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class MoneyDropService {
@@ -35,6 +34,8 @@ public class MoneyDropService {
     private ChatRoomRepository chatRoomRepository;
 
     private MoneyGetterRepository moneyGetterRepository;
+
+    private DistributeMoneyServiceManager distributeMoneyServiceManager;
 
     /**
      * 유저가 채팅방에 돈을 뿌립니다.
@@ -69,7 +70,8 @@ public class MoneyDropService {
         moneyDrop.setMoneyGetExpiredAfter(now.plus(10L, ChronoUnit.MINUTES));
         moneyDrop.setViewExpiredAfter(now.plus(7L, ChronoUnit.DAYS));
 
-        List<Integer> distribution = distributeMoney(moneyDrop, new SecureRandom());
+        // 돈 분배 로직을 실행하고, distribution 칼럼에 저장
+        List<Integer> distribution = distributeMoneyServiceManager.distributeMoney(moneyToDrop, howManyUsers, new SecureRandom());
         moneyDrop.setDistribution(distribution);
 
         moneyDropRepository.save(moneyDrop);
@@ -79,7 +81,7 @@ public class MoneyDropService {
     /**
      *
      * @param chatRoomName 채팅방 이름
-     * @param howManyUsers 돈뿌리기 인
+     * @param howManyUsers 돈뿌리기 인원
      * @return true, 채팅방 인원수(본인 제외)보다, 돈뿌리기 인원(howManyUsers)이 더 큰 경우
      */
     private boolean isTooManyUsers(String chatRoomName, int howManyUsers) {
@@ -188,26 +190,6 @@ public class MoneyDropService {
         return response;
     }
 
-    // 돈 분배 로직을 담당하는 메서드
-    public List<Integer> distributeMoney(MoneyDrop moneyDrop, Random r) {
-        int currentBalance = moneyDrop.getFirstBalance();
-        final int howManyUsers = moneyDrop.getHowManyUsers();
-
-        ArrayList<Integer> result = new ArrayList<>();
-        int money;
-        for (int i = 0; i < howManyUsers; i++) {
-            if (currentBalance == 0) {
-                result.add(0);
-                break;
-            }
-            money = RandomUtil.generateRandomInteger(r, currentBalance);
-            currentBalance -= money;
-            result.add(money);
-        }
-
-        return result;
-    }
-
     public int getMoneyFrom(List<Integer> distribution, final int index) {
         if (index > distribution.size() - 1) {
             return 0;
@@ -239,5 +221,10 @@ public class MoneyDropService {
     @Autowired
     public void setMoneyGetterRepository(MoneyGetterRepository moneyGetterRepository) {
         this.moneyGetterRepository = moneyGetterRepository;
+    }
+
+    @Autowired
+    public void setDistributeMoneyServiceManager(DistributeMoneyServiceManager distributeMoneyServiceManager) {
+        this.distributeMoneyServiceManager = distributeMoneyServiceManager;
     }
 }
