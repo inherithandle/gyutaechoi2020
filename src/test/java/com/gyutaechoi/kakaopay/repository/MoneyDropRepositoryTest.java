@@ -56,6 +56,7 @@ class MoneyDropRepositoryTest {
         moneyDrop.setNumOfMoneyGetters(0);
         moneyDrop.setMoneyGetExpiredAfter(now.plus(10L, ChronoUnit.MINUTES));
         moneyDrop.setViewExpiredAfter(now.plus(7L, ChronoUnit.DAYS));
+        moneyDrop.setCreatedDateTime(now);
 
         List<Integer> distribution = new ArrayList<>(3);
         distribution.add(100);

@@ -22,7 +22,7 @@ public class MoneyDrop {
     private List<MoneyGetter> moneyGetters = new ArrayList<>(); // 뿌린 금액을 받은 사람들
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private ChatRoom chatRoom;
+    private ChatRoom chatRoom; // 이 채팅방에 돈을 뿌린다.
 
     @NaturalId
     @Column(length = 3, nullable = false)
@@ -44,11 +44,14 @@ public class MoneyDrop {
     @Column(nullable = false)
     private Integer currentBalance; // 남은 금액
 
-    private LocalDateTime createdDateTime;
+    @Column(nullable = false)
+    private LocalDateTime createdDateTime; // 돈을 뿌린 기간
 
-    LocalDateTime viewExpiredAfter;
+    @Column(nullable = false)
+    LocalDateTime viewExpiredAfter; // 조회 유효 기간 (7일)
 
-    LocalDateTime moneyGetExpiredAfter;
+    @Column(nullable = false)
+    LocalDateTime moneyGetExpiredAfter; // 돈받기 유효기간 (10분)
 
     @Override
     public boolean equals(Object o) {

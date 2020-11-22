@@ -135,13 +135,15 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 * 돈이 완전 분배될수 있는지 안될 수 있는지 테스트 합니다.
     * 500원을 3명에게 뿌리려고 했는데, [150, 250, 100] 처럼 모든 돈이 분배 될 수 있습니다.
     * 500원을 3명에게 뿌리려고 했는데, [350, 20, 30] 처럼 모든 돈이 분배되지 않고, 100원이 남을 수 있습니다.
-* 500원을 뿌렸는데, 절대 700원이 분배되는 일이 없는지 확인합니다.
+* 500원을 뿌렸는데, 700원이 분배되는 일이 절대로 발생해서는 안됩니다. 유닛테스트로 확인합니다.
 ```bash
 ./gradlew :cleanTest :test --tests "com.gyutaechoi.kakaopay.service.DistributeMoneyTest"
 ```
 
-### 그 외 통합테스트
-src/test/java 디렉토리 아래에서 확인 가능합니다.
+### 그 외 유닛, 통합테스트
+* @Repository 객체들이 제가 원하는대로 쿼리를 생성했는지 확인했습니다. (*RepositoryTest.java)
+* MoneyDropService 객체에, Repository 객체들이 잘 주입되어 DB와 연동되는지 확인했습니다. (MoneyDropService.java)
+* 그 외 30개 이상의 테스트 케이스
 
 ### API 사용 시나리오 1 
 뿌리기 API를 호출하여 토큰 정보를 얻습니다.
@@ -247,6 +249,15 @@ curl -H 'X-USER-ID: 2' http://localhost:8080/money-drop?token=0nR
   "timestamp" : "2020-11-20T15:47:30.274",
   "status" : 403,
   "message" : "403 Forbidden"
+}
+```
+유저번호 1인 Ada Lovelace가 8일 뒤에 자신의 돈뿌리기 정보를 토큰을 이용하여 확인해봅니다. 유효기간이 지나 조회할 수 없습니다.
+```bash
+curl -H 'X-USER-ID: 1' http://localhost:8080/money-drop?token=0nR
+{
+  "timestamp" : "2020-11-28T10:33:22.853",
+  "status" : 400,
+  "message" : "유효기간이 지났습니다."
 }
 ```
 ### API 사용 시나리오 2

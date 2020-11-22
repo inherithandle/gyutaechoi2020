@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * 돈 분배 로직 단위 테스
+ * 돈 분배 로직 단위 테스트
  */
 public class DistributeMoneyTest {
 
@@ -69,13 +69,13 @@ public class DistributeMoneyTest {
 
     /**
      * 지정된 금액보다 더 많은 금액이 분배되지 않음을 체크
-     * 500원을 뿌리려고 했는데 600원이 뿌려지지 않음을 확인한다.
+     * 20억을을 뿌리려고 했는데 20억을 초과해서 뿌려지지 않음을 확인한다.
      */
     @Test
     public void distributeTooMuchMoneyToTooManyUsers() {
         final int howManyUsers = 1500;
         final int money = 2_000_000_000;
-        final int NUMBER_OF_TRIALS = 1000;
+        final int NUMBER_OF_TRIALS = 10;
 
         for (int i = 1; i <= NUMBER_OF_TRIALS; i++) {
             MoneyDrop moneyDrop = new MoneyDrop();
