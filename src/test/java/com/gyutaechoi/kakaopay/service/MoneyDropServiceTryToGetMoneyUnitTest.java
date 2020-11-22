@@ -116,7 +116,7 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
     @Test
     public void 유효기간이_지나면_돈을_주울수_없다() {
         final LocalDateTime now = LocalDateTime.now();
-        final LocalDateTime tenMinutesEarlier = now.minusSeconds(60 * 10 + 1); // 지금으로부터 10분 1초전 시간
+        final LocalDateTime oneSecondEarlier = now.minusSeconds(1); // 지금으로부터 1초전 시간
         final LocalDateTime sevenDaysLater = now.plusDays(7L); // 지금으로부터 7일뒤 시간
         final Long billGatesUserNo = 2L;
 
@@ -126,9 +126,9 @@ public class MoneyDropServiceTryToGetMoneyUnitTest {
                 .willReturn(Optional.of(getKakaoPayUserView(billGatesUserNo)));
 
         // 토큰으로 "돈뿌리기" 정보를 조회할수 있는지 확인. 조회할수 있다고 가정한다.
-        // 근데 유효기간이 10분 1초전이라고 가정한다.
+        // 근데 돈뿌리기가 방금 만료되었다고 가정한다.
         given(moneyDropRepository.findMoneyDropByToken(mockToken))
-                .willReturn(Optional.of(getMoneyDrop(sevenDaysLater, tenMinutesEarlier, mockUserNo, 3, 0)));
+                .willReturn(Optional.of(getMoneyDrop(sevenDaysLater, oneSecondEarlier, mockUserNo, 3, 0)));
 
         // 유효기간이 지났으므로 예외를 던진다.
         assertThrows(BadRequestException.class, () -> {
