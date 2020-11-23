@@ -92,6 +92,12 @@ X-USER-ID 헤더에 사용되는 값은 user_no 입니다.
 | 10      | 검색왕       | user10  | 12345    | Larry Page         |
 
 **채팅방 설정**
+
+| chat_room_no | chat_room_name | creator_user_no |
+|--------------|----------------|-----------------|
+| 1            | chatroom_id1   | 1               |
+| 2            | chatroom_id2   | 1               |
+| 3            | chatroom_id3   | 8               |
 * X-ROOM-ID 헤더 값으로 chat_room 테이블의 chat_room_name을 사용합니다.
 * 채팅방 번호 1, 채팅방(chatroom_id1)에는 모든 유저 10명이 참여하고 있습니다.
 * 채팅방 번호 2, 채팅방(chatroom_id2)에는 러브레이스(1), 일론 머스크(3), 래리 페이지(10)가 대화하고 있습니다.
