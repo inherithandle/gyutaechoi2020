@@ -42,6 +42,7 @@ public class DistributeMoneyAllUsersService implements DistributeMoneyService {
             i++;
         }
 
+        // 마지막 사람에게 분배할 돈이 없으면 가장 많이 받은 사람의 절반을 분배한다.
         if (currentBalance == 0) {
             int max = result.get(0);
             int maxIndex = 0;
@@ -56,6 +57,7 @@ public class DistributeMoneyAllUsersService implements DistributeMoneyService {
             result.set(maxIndex, result.get(maxIndex) - half);
             result.add(half);
         } else {
+            // 마지막 사람에게 나머지 돈을 분배한다.
             result.add(currentBalance);
         }
         return result;
