@@ -1,5 +1,8 @@
 # 돈 뿌리기, 받기, 조회 API 구현하기
 
+### GitHub URL
+https://github.com/inherithandle/gyutaechoi2020
+
 ### 프로젝트 빌드, 실행을 위해 반드시 설치되어 있어야 합니다.
 * Java 8 혹은 그 이후 버전
 
