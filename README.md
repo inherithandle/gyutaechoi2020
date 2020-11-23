@@ -15,7 +15,8 @@
 ### 빌드, 실행
 프로젝트안에 포함되어있는 Gradle Wrapper를 사용하여 빌드, 실행 해주세요.
 ```bash
-git clone 
+git clone https://github.com/inherithandle/gyutaechoi2020
+cd gyutaechoi2020
 ./gradlew bootRun
 ```
 * API 문서: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
